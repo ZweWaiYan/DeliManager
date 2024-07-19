@@ -9,9 +9,20 @@ import {
     Button,
     Modal,
     TextField,
-    CardContent, Stack, Snackbar, Alert
+    CardContent, Stack, Snackbar, Alert, MenuItem
 } from '@mui/material';
+
+import dayjs from 'dayjs';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+
 import { CreateMockApiData, DeleteMockApiData, EditMockApiData } from 'src/api/MockAPI';
+import { TimePicker } from '@mui/x-date-pickers';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+import packageWayProcess from '../utilities/packageWayProcess';
+import { times } from 'lodash';
 
 //Delete Modal Style
 const deleteModalStyle = {
@@ -250,6 +261,8 @@ const createEditModalStyle = {
 const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, companyId, onCreate, onEdit, onDelete }) => {
 
     console.log("DataTable Render");
+    dayjs.extend(customParseFormat);
+
     const [modalState, setModalState] = useState({
         open: false,
         type: 'create',
@@ -337,6 +350,132 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
         return idKey ? row[idKey] : null;
     };
 
+    // const modalContent = () => {
+    //     const { type } = modalState;
+
+    //     if (type === 'delete') {
+    //         return (
+    //             <Box sx={deleteModalStyle}>
+    //                 <form onSubmit={handleSubmit}>
+    //                     <Typography sx={{ marginBottom: '30px', marginLeft: '25px' }} variant="h6" component="h2">
+    //                         Are you sure to delete this user?
+    //                     </Typography>
+    //                     <Button sx={{ marginTop: '10px', marginRight: '120px' }} type="submit" variant="contained" color="error">
+    //                         Submit
+    //                     </Button>
+    //                     <Button sx={{ marginTop: '10px' }} onClick={closeModal} type="button" variant="contained" color="primary">
+    //                         Cancel
+    //                     </Button>
+    //                 </form>
+    //             </Box>
+    //         );
+    //     }
+
+    //     return (
+    //         <Box sx={createEditModalStyle}>
+    //             <Typography sx={{ marginBottom: '20px' }} variant="h6">
+    //                 {type === 'create' ? 'Create new user' : 'Edit existing user'}
+    //             </Typography>
+    //             <form onSubmit={handleSubmit}>
+    //                 {tableTitle.slice(1).map((key) => {
+    //                     const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
+
+    //                     if (key.toLowerCase().includes('pickupdate')) {
+    //                         return (
+    //                             <LocalizationProvider dateAdapter={AdapterDayjs}>
+    //                                 <Box sx={{ marginTop: '10px' }}>
+    //                                     <Stack direction="row" spacing={2}>
+    //                                         <DatePicker
+    //                                             label="PickupDate"
+    //                                             defaultValue={textFieldRefs.current["pickupDate"] || dayjs()}
+    //                                             inputRef={ref => { textFieldRefs.current["pickupDate"] = ref; }}
+    //                                             renderInput={(params) => (
+    //                                                 <TextField
+    //                                                     {...params}
+    //                                                     fullWidth
+    //                                                     margin="normal"
+    //                                                     variant="outlined"
+    //                                                 />
+    //                                             )}
+    //                                         />
+    //                                         <TimePicker
+    //                                             label="PickupTime"
+    //                                             defaultValue={textFieldRefs.current["pickupTime"] || dayjs()}
+    //                                             inputRef={ref => { textFieldRefs.current["pickupTime"] = ref; }}
+    //                                             renderInput={(params) => (
+    //                                                 <TextField
+    //                                                     {...params}
+    //                                                     fullWidth
+    //                                                     margin="normal"
+    //                                                     variant="outlined"
+    //                                                 />
+    //                                             )}
+    //                                         />
+    //                                     </Stack>
+    //                                 </Box>
+    //                             </LocalizationProvider>
+    //                         );
+    //                     }
+    //                     if (type !== 'create' && key.toLowerCase().includes('receiveddate')) {
+    //                         return (
+    //                             <LocalizationProvider dateAdapter={AdapterDayjs}>
+    //                                 <Box sx={{ marginTop: '15px' }}>
+    //                                     <Stack direction="row" spacing={2}>
+    //                                         <DatePicker
+    //                                             label="ReceivedDate"
+    //                                             defaultValue={textFieldRefs.current["receivedDate"] || dayjs()}
+    //                                             inputRef={ref => { textFieldRefs.current["receivedDate"] = ref; }}
+    //                                             renderInput={(params) => (
+    //                                                 <TextField
+    //                                                     {...params}
+    //                                                     fullWidth
+    //                                                     margin="normal"
+    //                                                     variant="outlined"
+    //                                                 />
+    //                                             )}
+    //                                         />
+    //                                         <TimePicker
+    //                                             label="ReceivedTime"
+    //                                             defaultValue={textFieldRefs.current["receivedTime"] || dayjs()}
+    //                                             inputRef={ref => { textFieldRefs.current["receivedTime"] = ref; }}
+    //                                             renderInput={(params) => (
+    //                                                 <TextField
+    //                                                     {...params}
+    //                                                     fullWidth
+    //                                                     margin="normal"
+    //                                                     variant="outlined"
+    //                                                 />
+    //                                             )}
+    //                                         />
+    //                                     </Stack>
+    //                                 </Box>
+    //                             </LocalizationProvider>
+    //                         );
+    //                     }
+    //                     if (!key.toLowerCase().includes('time') && !key.toLowerCase().includes('date') && !key.toLowerCase().includes('packagewayprocess') && !(key.toLowerCase().includes('packagewayprocess') && type !== 'create')) {
+    //                         return (
+    //                             <TextField
+    //                                 key={key}
+    //                                 label={key}
+    //                                 name={key}
+    //                                 defaultValue={textFieldRefs.current[lowerKey] || ''}
+    //                                 inputRef={ref => textFieldRefs.current[lowerKey] = ref}
+    //                                 fullWidth
+    //                                 margin="normal"
+    //                                 variant="outlined"
+    //                             />
+    //                         )
+    //                     }
+
+    //                 })}
+    //                 <Button sx={{ marginTop: '30px' }} type="submit" variant="contained" color="primary">
+    //                     Submit
+    //                 </Button>
+    //             </form>
+    //         </Box>
+    //     );
+    // };
+
     const modalContent = () => {
         const { type } = modalState;
 
@@ -360,28 +499,212 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
 
         return (
             <Box sx={createEditModalStyle}>
-                <Typography sx={{ marginBottom: '20px' }} variant="h6" component="h2">
+                <Typography sx={{ marginBottom: '20px' }} variant="h6">
                     {type === 'create' ? 'Create new user' : 'Edit existing user'}
                 </Typography>
                 <form onSubmit={handleSubmit}>
-                    {tableTitle.slice(1).map((key) => (
-                        <TextField
-                            key={key}
-                            label={key}
-                            name={key}
-                            defaultValue={textFieldRefs.current[key.charAt(0).toLowerCase() + key.slice(1)] || ''}
-                            inputRef={ref => textFieldRefs.current[key.charAt(0).toLowerCase() + key.slice(1)] = ref}
-                            fullWidth
-                            margin="normal"
-                            variant="outlined"
-                        />
-                    ))}
+                    {tableTitle.slice(1).map((key) => {
+                        const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
+                        return (
+                            <TextField
+                                key={key}
+                                label={key}
+                                name={key}
+                                defaultValue={textFieldRefs.current[lowerKey] || ''}
+                                inputRef={ref => textFieldRefs.current[lowerKey] = ref}
+                                fullWidth
+                                margin="normal"
+                                variant="outlined"
+                            />
+                        )
+                    })}
                     <Button sx={{ marginTop: '30px' }} type="submit" variant="contained" color="primary">
                         Submit
                     </Button>
                 </form>
             </Box>
         );
+    };
+
+    const packageModalContent = () => {
+        console.log("modal work");
+        const { type } = modalState;
+
+        if (type === 'delete') {
+            return (
+                <Box sx={deleteModalStyle}>
+                    <form onSubmit={handleSubmit}>
+                        <Typography sx={{ marginBottom: '30px', marginLeft: '25px' }} variant="h6" component="h2">
+                            Are you sure to delete this user?
+                        </Typography>
+                        <Button sx={{ marginTop: '10px', marginRight: '120px' }} type="submit" variant="contained" color="error">
+                            Submit
+                        </Button>
+                        <Button sx={{ marginTop: '10px' }} onClick={closeModal} type="button" variant="contained" color="primary">
+                            Cancel
+                        </Button>
+                    </form>
+                </Box>
+            );
+        }
+
+        if (type === 'create') {
+            return (
+                <Box sx={createEditModalStyle}>
+                    <Typography sx={{ marginBottom: '20px' }} variant="h6">
+                        Create new package
+                    </Typography>
+                    <form onSubmit={handleSubmit}>
+                        {tableTitle.slice(1).map((key) => {
+                            const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
+                            if (key.toLowerCase().includes('pickupdate')) {
+                                return (
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <Box sx={{ marginTop: '10px' }}>
+                                            <Stack direction="row" spacing={2}>
+                                                <DatePicker
+                                                    label="PickupDate"
+                                                    defaultValue={textFieldRefs.current["pickupDate"] || dayjs()}
+                                                    inputRef={ref => { textFieldRefs.current["pickupDate"] = ref; }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            fullWidth
+                                                            margin="normal"
+                                                            variant="outlined"
+                                                        />
+                                                    )}
+                                                />
+                                                <TimePicker
+                                                    label="PickupTime"
+                                                    defaultValue={textFieldRefs.current["pickupTime"] || dayjs()}
+                                                    inputRef={ref => { textFieldRefs.current["pickupTime"] = ref; }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            fullWidth
+                                                            margin="normal"
+                                                            variant="outlined"
+                                                        />
+                                                    )}
+                                                />
+                                            </Stack>
+                                        </Box>
+                                    </LocalizationProvider>
+                                );
+                            }
+
+                            if (!key.toLowerCase().includes('receiveddate') &&
+                                !key.toLowerCase().includes('time') &&
+                                !key.toLowerCase().includes('deliverymanid') &&
+                                !key.toLowerCase().includes('packagewayprocess')
+                            ) {
+                                return (
+                                    <TextField
+                                        key={key}
+                                        label={key}
+                                        name={key}
+                                        defaultValue={textFieldRefs.current[lowerKey] || ''}
+                                        inputRef={ref => textFieldRefs.current[lowerKey] = ref}
+                                        fullWidth
+                                        margin="normal"
+                                        variant="outlined"
+                                    />
+                                )
+                            }
+                        })}
+                        <Button sx={{ marginTop: '30px' }} type="submit" variant="contained" color="primary">
+                            Submit
+                        </Button>
+                    </form>
+                </Box>
+            );
+        }
+
+        if (type === 'edit') {
+            return (
+                <Box sx={createEditModalStyle}>
+                    <Typography sx={{ marginBottom: '20px' }} variant="h6">
+                        Edit package
+                    </Typography>
+                    <form onSubmit={handleSubmit}>
+                        {tableTitle.slice(1).map((key) => {
+                            const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
+                            if (key.toLowerCase().includes('pickupdate')) {
+                                
+                                const dateString = textFieldRefs.current["pickupDate"];                                                            
+                                const dateValue = dateString ? dayjs(dateString, "MM/DD/YYYY") : dayjs();                   
+
+                                const timeString = textFieldRefs.current["pickupTime"];                                                            
+                                const timeValue = timeString ? dayjs(timeString, "hh:mm A") : dayjs();    
+                                                       
+                                return (
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <Box sx={{ marginTop: '10px' }}>
+                                            <Stack direction="row" spacing={2}>
+                                                <DatePicker
+                                                    label="PickupDate"
+                                                    defaultValue={dateValue}
+                                                    inputRef={ref => { textFieldRefs.current["pickupDate"] = ref; }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            fullWidth
+                                                            margin="normal"
+                                                            variant="outlined"
+                                                        />
+                                                    )}
+                                                />
+                                                <TimePicker
+                                                    label="PickupTime"
+                                                    defaultValue={timeValue}
+                                                    inputRef={ref => { textFieldRefs.current["pickupTime"] = ref; }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            fullWidth
+                                                            margin="normal"
+                                                            variant="outlined"
+                                                        />
+                                                    )}
+                                                />
+                                            </Stack>
+                                        </Box>
+                                    </LocalizationProvider>
+                                );
+                            }
+
+                            if (!key.toLowerCase().includes('receiveddate') &&
+                                !key.toLowerCase().includes('time') &&
+                                !key.toLowerCase().includes('deliverymanid') &&
+                                !key.toLowerCase().includes('packagewayprocess')
+                            ) {
+                                return (
+                                    <TextField
+                                        key={key}
+                                        label={key}
+                                        name={key}
+                                        defaultValue={textFieldRefs.current[lowerKey] || ''}
+                                        inputRef={ref => textFieldRefs.current[lowerKey] = ref}
+                                        fullWidth
+                                        margin="normal"
+                                        variant="outlined"
+                                    />
+                                )
+                            }
+                        })}
+                        <Button sx={{ marginTop: '30px' }} type="submit" variant="contained" color="primary">
+                            Submit
+                        </Button>
+                    </form>
+                </Box>
+            )
+        }
+    }
+
+    const getProcessNameById = (id) => {
+        const process = packageWayProcess.find(p => p.id === id);
+        return process ? process.wayProcess : 'Unknown Process';
     };
 
 
@@ -393,7 +716,11 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >
-                {modalContent()}
+                {title.toLowerCase().includes('package') ?
+                    packageModalContent()
+                    :
+                    modalContent()
+                }
             </Modal>
             <Snackbar
                 open={snackBarState.open}
@@ -456,11 +783,18 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                         <TableBody>
                             {tableData.map((row, rowIndex) => (
                                 <TableRow key={rowIndex}>
-                                    {tableTitle.map((column, colIndex) => (
-                                        <TableCell key={colIndex} style={{ textAlign: 'center' }}>
-                                            {row[column.charAt(0).toLowerCase() + column.slice(1)] === null ? <div>-</div> : row[column.charAt(0).toLowerCase() + column.slice(1)]}
-                                        </TableCell>
-                                    ))}
+                                    {tableTitle.map((column, colIndex) => {
+                                        const value = row[column.charAt(0).toLowerCase() + column.slice(1)]
+                                        return (
+                                            < TableCell key={colIndex} style={{ textAlign: 'center' }}>
+                                                {column === "PackageWayProcess" ?
+                                                    getProcessNameById(row["packageWayProcess"])
+                                                    :
+                                                    value === "" || value === 0 ? <div>-</div> : value
+                                                }
+                                            </TableCell>
+                                        )
+                                    })}
                                     <TableCell>
                                         <div style={{ display: 'flex', justifyContent: 'center' }}>
                                             <Button sx={{ marginRight: 1 }} onClick={() => handleEdit(row, rowIndex)} variant="outlined" color="secondary">Edit</Button>
@@ -472,7 +806,7 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                         </TableBody>
                     }
                 </Table>
-            </Box>
+            </Box >
         </>
     )
 

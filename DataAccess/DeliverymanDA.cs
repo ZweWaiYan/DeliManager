@@ -34,6 +34,7 @@ namespace DeliManager.DataAccess
                     DeliverymanAddress = row.DeliverymanAddress,
                     DeliverymanNRC = row.DeliverymanNRC,
                     DeliverymanImage = row.DeliverymanImage,
+                    CompanyId = row.CompanyId,
                     CreatedBy = row.CreatedBy,
                     CreatedDate = row.CreatedDate,
                     UpdatedBy = row.UpdatedBy,

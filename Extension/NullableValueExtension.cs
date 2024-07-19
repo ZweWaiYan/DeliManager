@@ -74,6 +74,18 @@ namespace DeliManager.Common
             }
         }
 
+        public static double DBNullToDoubleZero(this object param)
+        {
+            if (param == null || param == DBNull.Value)
+            {
+                return 0.0;
+            }
+            else
+            {
+                return Convert.ToDouble(param);
+            }
+        }
+
         /// <summary>
         /// DBNullの場合、Zeroを返す。(返却値の型：integer)
         /// </summary>

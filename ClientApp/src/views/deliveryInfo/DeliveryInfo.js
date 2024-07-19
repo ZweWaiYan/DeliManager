@@ -20,7 +20,7 @@ const DeliveryInfo = ({ auth }) => {
     const fetchDelivery = async () => {        
         const res = await FetchDeiverymanList(auth.companyId);
 
-        console.log("fetchUser");
+        console.log("fetch DeliveryInfo" , res);
         setTitleList(res.tableColumn);
         setTotalCount(res.totalCount);
         if (res.totalCount !== 0) {
