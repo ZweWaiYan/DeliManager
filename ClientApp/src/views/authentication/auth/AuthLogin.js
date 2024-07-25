@@ -21,11 +21,9 @@ const AuthLogin = ({ title, subtitle, subtext, auth, keepUser }) => {
 
     const [data, setData] = useState({ username: '', password: '' });
 
-    const handleSignIn = async () => {
-        console.log("handleSignIn", data);
+    const handleSignIn = async () => {        
         let values = { LoginPhone: data.username, LoginPassword: data.password };
-        let response = await signIn(values);
-        console.log("response" , response);
+        let response = await signIn(values);        
         keepUser(response.data);
         navigate('/dashboard');
     }

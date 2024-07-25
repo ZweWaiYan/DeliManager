@@ -12,7 +12,6 @@ export const fetchUser = () => async dispatch => {
     }
 };
 
-export const keepUser = (userData) => async dispatch => {
-    console.log("authAction userData" , userData);
+export const keepUser = (userData) => async dispatch => {    
     dispatch({type : KEEP_USER , payload: userData});
 };

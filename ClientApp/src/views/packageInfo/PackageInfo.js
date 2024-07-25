@@ -18,7 +18,7 @@ const PackageInfo = ({ auth }) => {
     const fetchPackage = async () => {
         const res = await FetchPackageList(auth.companyId);
 
-        console.log("fetch PackageInfo", res);        
+        console.log("fetch PackageInfo");        
         setTitleList(res.tableColumn);
         setTotalCount(res.totalCount);
         if (res.totalCount !== 0) {

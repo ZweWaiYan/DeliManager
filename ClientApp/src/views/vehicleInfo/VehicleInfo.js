@@ -2,25 +2,23 @@ import React, { useEffect, useReducer, useRef, useState } from "react";
 import PageContainer from "src/components/container/PageContainer";
 import DataTable from '../table/DataTable';
 import DashboardCard from 'src/components/shared/DashboardCard';
-import { FetchDeliverymanList } from "src/api/DeliveryAPI";
+import { FetchVehicleList , CreateVehicle , EditVehicle , DeleteVehicle } from "src/api/VehicleAPI";
 
 import { connect } from 'react-redux';
 import * as actions from './../../actions/authActions';
 
-import { DeleteDeliveryman , CreateDeliveryman , EditDeliveryman} from '../../api/DeliveryAPI';
+const VehicleInfo = ({ auth }) => {
 
-const DeliveryInfo = ({ auth }) => {
-
-    console.log("DeliveryInfo Render")
+    console.log("VehicleInfo Render")
 
     const [dataList, setDataList] = useState([]);
     const [titleList, setTitleList] = useState([]);
     const [totalCount, setTotalCount] = useState(0);
 
-    const fetchDelivery = async () => {        
-        const res = await FetchDeliverymanList(auth.companyId);
+    const fetchVehicle = async () => {        
+        const res = await FetchVehicleList(auth.companyId);
 
-        console.log("fetch DeliveryInfo");
+        console.log("fetch VehicleInfo");
         setTitleList(res.tableColumn);
         setTotalCount(res.totalCount);
         if (res.totalCount !== 0) {
@@ -29,30 +27,30 @@ const DeliveryInfo = ({ auth }) => {
     }
 
     useEffect(() => {
-        fetchDelivery();
+        fetchVehicle();
     }, []);
 
-    const handleCreate = async (data, companyId) => {
-        await CreateDeliveryman(data, companyId);                
-        fetchDelivery();
+    const handleCreate = async (data, companyId) => {        
+        await CreateVehicle(data, companyId);                
+        fetchVehicle();
     };
 
     const handleEdit = async (id, data, companyId) => {            
-        await EditDeliveryman(id , data, companyId);
-        fetchDelivery();
+        await EditVehicle(id , data, companyId);
+        fetchVehicle();
     };
 
     const handleDelete = async (id, companyId) => {        
-        await DeleteDeliveryman(id, companyId);
-        fetchDelivery();
+        await DeleteVehicle(id, companyId);
+        fetchVehicle();
     };
 
     return (
-        <PageContainer title="DeliveryInfo Table" description="This is DeliveryInfo Table">
+        <PageContainer title="VehicleInfo Table" description="This is VehicleInfo Table">
             <DashboardCard>
                 <DataTable
-                    title={"DeliveryInfo Table"}
-                    titleButton={"New Delivery"}
+                    title={"VehicleInfo Table"}
+                    titleButton={"New Vehicle"}
                     tableTitle={titleList}
                     tableData={dataList}
                     totalCount={totalCount}
@@ -65,10 +63,10 @@ const DeliveryInfo = ({ auth }) => {
     );
 }
 
-// export default DeliveryInfo;
+// export default VehicleInfo;
 
 function mapStateToProps(state) {
     return { auth: state.auth };
 }
 
-export default connect(mapStateToProps, actions)(DeliveryInfo);
+export default connect(mapStateToProps, actions)(VehicleInfo);

@@ -13,30 +13,30 @@ namespace DeliManager.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DeliverymanController : ControllerBase
+    public class VehicleController : ControllerBase
     {   
         [HttpPost("[action]")]        
-        public ActionResult<SearchResultObject<BaseTB_DeliverymanEntity>> FetchDeliverymanList(BaseTB_DeliverymanEntity deliverymanEntityInfo)
+        public ActionResult<SearchResultObject<BaseTB_VehicleEntity>> FetchVehicleList(BaseTB_VehicleEntity VehicleEntityInfo)
         {            
-            DeliverymanDA DA_Deliveryman = new DeliverymanDA();           
-            return DA_Deliveryman.FetchDeliverymanDA(deliverymanEntityInfo.CompanyId);
+            VehicleDA DA_Vehicle = new VehicleDA();           
+            return DA_Vehicle.FetchVehicleDA(VehicleEntityInfo.CompanyId);
         }
 
 
         [HttpPost("[action]")]
-        public ActionResult<ResultStatus> CreateDeliveryman(BaseTB_DeliverymanEntity deliverymanEntityInfo)
+        public ActionResult<ResultStatus> CreateVehicle(BaseTB_VehicleEntity VehicleEntityInfo)
         {
             ResultStatus result = new ResultStatus();
-            DeliverymanDA DA_Deliveryman = new DeliverymanDA();
-            BaseTB_Deliveryman BaseTB_Deliveryman = new BaseTB_Deliveryman();
+            VehicleDA DA_Vehicle = new VehicleDA();
+            BaseTB_Vehicle BaseTB_Vehicle = new BaseTB_Vehicle();
 
-            deliverymanEntityInfo.DeliverymanId = null;
-            var HasUser = BaseTB_Deliveryman.HasDuplicatedDeliveryman(deliverymanEntityInfo.DeliverymanPh, deliverymanEntityInfo.CompanyId);
+            VehicleEntityInfo.VehicleId = null;
+            var HasUser = BaseTB_Vehicle.HasDuplicatedVehicle(VehicleEntityInfo.LicensePlate, VehicleEntityInfo.CompanyId);
 
             if (!HasUser)
             {
-                //Create New Deliveryman
-                result = DA_Deliveryman.CreateDeliverymanDA(deliverymanEntityInfo);
+                //Create New Vehicle
+                result = DA_Vehicle.CreateVehicleDA(VehicleEntityInfo);
                 if (result.Status)
                 {
                     result.Status = result.Status;
@@ -58,12 +58,12 @@ namespace DeliManager.Controllers
 
 //PUT
         [HttpPost("[action]")]
-        public ActionResult<ResultStatus> EditDeliveryman(BaseTB_DeliverymanEntity deliverymanEntityInfo)
+        public ActionResult<ResultStatus> EditVehicle(BaseTB_VehicleEntity VehicleEntityInfo)
         {
             ResultStatus result = new ResultStatus();            
-            DeliverymanDA DA_Deliveryman = new DeliverymanDA();
-            //Edit Deliveryman
-            result = DA_Deliveryman.EditDeliverymanDA(deliverymanEntityInfo);
+            VehicleDA DA_Vehicle = new VehicleDA();
+            //Edit Vehicle
+            result = DA_Vehicle.EditVehicleDA(VehicleEntityInfo);
             if (result.Status)
             {
                 result.Status = result.Status;
@@ -78,12 +78,12 @@ namespace DeliManager.Controllers
         }
 
          [HttpPost("[action]")]
-        public ActionResult<ResultStatus> DeleteDeliveryman(BaseTB_DeliverymanEntity deliverymanEntityInfo)
+        public ActionResult<ResultStatus> DeleteVehicle(BaseTB_VehicleEntity VehicleEntityInfo)
         {
             ResultStatus result = new ResultStatus();            
-            DeliverymanDA DA_Deliveryman = new DeliverymanDA();
-            //Delete Deliveryman
-            result = DA_Deliveryman.DeleteDeliverymanDA(deliverymanEntityInfo);
+            VehicleDA DA_Vehicle = new VehicleDA();
+            //Delete Vehicle
+            result = DA_Vehicle.DeleteVehicleDA(VehicleEntityInfo);
             if (result.Status)
             {
                 result.Status = result.Status;

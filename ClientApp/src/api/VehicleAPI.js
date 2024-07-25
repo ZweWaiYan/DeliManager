@@ -1,12 +1,13 @@
+import { Modal } from "@mui/material";
 import axios from "axios";
 
-export const FetchDeliverymanList = async (companyId) => {
+export const FetchVehicleList = async (companyId) => {
     var result = { Status: true, Message: "", Data: null };
     var data = {
         CompanyId: companyId
     }        
     try {
-        const response = await axios.post(`/api/Deliveryman/FetchDeliverymanList`, data);        
+        const response = await axios.post(`/api/Vehicle/FetchVehicleList`, data);        
         if (response && response.status === 200) {
             result.Status = true;
             return response.data;
@@ -22,19 +23,20 @@ export const FetchDeliverymanList = async (companyId) => {
     }
 };
 
-export const CreateDeliveryman = async (deliverymanValues, companyId) => {
+export const CreateVehicle = async (VehicleValues, companyId) => {
     var result = { Status: true, Message: "", Data: null};    
-    let data = {
-        DeliverymanName: deliverymanValues.deliverymanName,
-        DeliverymanPh: deliverymanValues.deliverymanPh,
-        DeliverymanAddress: deliverymanValues.deliverymanAddress,
-        DeliverymanNRC: deliverymanValues.deliverymanNRC,
-        // DeliverymanImage: deliverymanValues.DeliverymanImage.value,
-        DeliverymanAge: parseInt(deliverymanValues.deliverymanAge),
+    let data = {            
+        LicensePlate: VehicleValues.licensePlate,
+        Modal: VehicleValues.modal,
+        Manufacturer: VehicleValues.manufacturer,
+        VehicleStatus: 1,        
+        Capacity: parseInt(VehicleValues.capacity),
+        insuranceExpiryDate: VehicleValues.insuranceExpiryDate,
+        FuelLevel: parseFloat(VehicleValues.fuelLevel),
         CompanyId: companyId,
-    };        
+    };            
     try {
-        const response = await axios.post(`/api/Deliveryman/CreateDeliveryman`, data);      
+        const response = await axios.post(`/api/Vehicle/CreateVehicle`, data);      
         if (response && response.status === 200) {
             return response.data;
         } else {
@@ -53,20 +55,22 @@ export const CreateDeliveryman = async (deliverymanValues, companyId) => {
     }
 }
 
-export const EditDeliveryman = async (id , deliverymanValues, companyId) => {    
-    var result = { Status: true, Message: "", Data: null};    
+export const EditVehicle = async (id , VehicleValues, companyId) => {    
+    var result = { Status: true, Message: "", Data: null};        
     let data = {
-        DeliverymanId: id,
-        DeliverymanName: deliverymanValues.deliverymanName,
-        DeliverymanPh: deliverymanValues.deliverymanPh,
-        DeliverymanAddress: deliverymanValues.deliverymanAddress,
-        DeliverymanNRC: deliverymanValues.deliverymanNRC,
-        // DeliverymanImage: deliverymanValues.DeliverymanImage.value,
-        DeliverymanAge: parseInt(deliverymanValues.deliverymanAge),
+        VehicleId: id,       
+        LicensePlate: VehicleValues.licensePlate,
+        Modal: VehicleValues.modal,
+        Manufacturer: VehicleValues.manufacturer,
+        DeliveryId : parseInt(VehicleValues.deliveryId),        
+        VehicleStatus: 1,
+        Capacity: parseInt(VehicleValues.capacity),
+        insuranceExpiryDate: VehicleValues.insuranceExpiryDate,
+        FuelLevel: parseFloat(VehicleValues.fuelLevel),
         CompanyId: companyId,
-    };        
+    };            
     try {
-        const response = await axios.post(`/api/Deliveryman/EditDeliveryman`, data);      
+        const response = await axios.post(`/api/Vehicle/EditVehicle`, data);      
         if (response && response.status === 200) {
             return response.data;
         } else {
@@ -85,14 +89,14 @@ export const EditDeliveryman = async (id , deliverymanValues, companyId) => {
     }
 }
 
-export const DeleteDeliveryman = async (deliverymanId, companyId) => {
+export const DeleteVehicle = async (VehicleId, companyId) => {
     var result = { Status: true, Message: "", Data: null};
     let data = {
-        DeliverymanId: deliverymanId,    
+        VehicleId: VehicleId,    
         CompanyId: companyId,
     };    
     try {
-        const response = await axios.post(`/api/Deliveryman/DeleteDeliveryman`, data);
+        const response = await axios.post(`/api/Vehicle/DeleteVehicle`, data);
         if (response && response.status === 200) {
             return response.data;
         } else {

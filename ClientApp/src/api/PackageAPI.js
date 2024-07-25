@@ -6,8 +6,7 @@ export const FetchPackageList = async (companyId) => {
         CompanyId: companyId
     }
     try {
-        const response = await axios.post(`/api/Package/FetchPackageList`, data);
-        console.log("fetch response" , response);
+        const response = await axios.post(`/api/Package/FetchPackageList`, data);        
         if (response && response.status === 200) {
             result.Status = true;
             return response.data;
@@ -107,8 +106,7 @@ export const DeletePackage = async (packageId, companyId) => {
     let data = {
         PackageId: packageId,    
         CompanyId: companyId,
-    };    
-    console.log("delete data" , data);
+    };        
     try {
         const response = await axios.post(`/api/Package/DeletePackage`, data);
         if (response && response.status === 200) {

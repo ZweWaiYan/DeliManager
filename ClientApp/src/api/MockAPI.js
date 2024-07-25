@@ -17,8 +17,7 @@ export const GetMockApiData = async () => {
     }
 }
 
-export const CreateMockApiData = async (mockApiData) => {
-    console.log("api mockApiData" , mockApiData);
+export const CreateMockApiData = async (mockApiData) => {    
     try {
         const response = await axios.post(`https://661d2de1e7b95ad7fa6c6b8b.mockapi.io/api/v1/Users`, mockApiData);
         if (response && response.status === 200) {

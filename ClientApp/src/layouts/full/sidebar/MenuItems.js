@@ -1,6 +1,7 @@
 import {
   IconLayoutDashboard, IconTable, IconPackgeExport,
-  IconUsers, IconPackages
+  IconUsers, IconPackages, IconRoute,
+  IconCar
 } from '@tabler/icons';
 import { icon } from 'leaflet';
 
@@ -42,12 +43,24 @@ const Menuitems = [
     title: 'Delivery Info',
     icon: IconUsers,
     href: '/deliveryinfo',
+  },  
+  {
+    id: uniqueId(),
+    title: 'Vehicle Info',
+    icon: IconCar,
+    href: '/vehicleinfo',
   },
   {
     id: uniqueId(),
     title: 'Package Info',
     icon: IconPackages,
     href: '/packageinfo',
+  },
+  {
+    id: uniqueId(),
+    title: 'Route',
+    icon: IconRoute,
+    href: '/routeinfo',
   }
 ]
 

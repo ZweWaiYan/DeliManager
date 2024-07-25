@@ -22,6 +22,8 @@ import { TimePicker } from '@mui/x-date-pickers';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 import packageWayProcess from '../utilities/packageWayProcess';
+import vehicleStatus from '../utilities/vehicleStatus';
+
 import { times } from 'lodash';
 
 //Delete Modal Style
@@ -56,7 +58,6 @@ const createEditModalStyle = {
 
 //For MOCK API
 // const DataTable = ({ title, titleButton, fetchData }) => {
-//     console.log("fetchData" , fetchData);
 //     const [apiData, setApiData] = useState([]);
 //     const [columnNames, setColumnNames] = useState([]);
 //     const [isLoading, setIsLoading] = useState(true);
@@ -314,7 +315,7 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
             case 'create':
                 operation = onCreate(data, companyId);
                 successMsg = 'User created successfully';
-                errorMsg = 'Failed to create user.'
+                errorMsg = 'Failed to create user.';
                 break;
             case 'edit':
                 operation = onEdit(getClickedRowId(rowIndex), data, companyId);
@@ -526,8 +527,7 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
         );
     };
 
-    const packageModalContent = () => {
-        console.log("modal work");
+    const vehicleModalContent = () => {
         const { type } = modalState;
 
         if (type === 'delete') {
@@ -535,7 +535,141 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                 <Box sx={deleteModalStyle}>
                     <form onSubmit={handleSubmit}>
                         <Typography sx={{ marginBottom: '30px', marginLeft: '25px' }} variant="h6" component="h2">
-                            Are you sure to delete this user?
+                            Are you sure to delete this vehicle?
+                        </Typography>
+                        <Button sx={{ marginTop: '10px', marginRight: '120px' }} type="submit" variant="contained" color="error">
+                            Submit
+                        </Button>
+                        <Button sx={{ marginTop: '10px' }} onClick={closeModal} type="button" variant="contained" color="primary">
+                            Cancel
+                        </Button>
+                    </form>
+                </Box>
+            );
+        }
+
+        if (type === 'create') {
+            return (
+                <Box sx={createEditModalStyle}>
+                    <Typography sx={{ marginBottom: '20px' }} variant="h6">
+                        {type === 'create' ? 'Create new vehicle' : 'Edit existing vehicle'}
+                    </Typography>
+                    <form onSubmit={handleSubmit}>
+                        {tableTitle.slice(1).map((key) => {
+                            const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
+                            if (key.toLowerCase().includes('insuranceexpirydate')) {
+                                return (
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <DatePicker
+                                            label="insuranceExpiryDate"
+                                            defaultValue={textFieldRefs.current["insuranceExpiryDate"] || dayjs()}
+                                            inputRef={ref => { textFieldRefs.current["insuranceExpiryDate"] = ref; }}
+                                            slots={{
+                                                textField: (params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        fullWidth
+                                                        margin="normal"
+                                                        variant="outlined"
+                                                    />
+                                                ),
+                                            }}
+                                        />
+                                    </LocalizationProvider>
+                                );
+                            }
+
+                            if (!key.toLowerCase().includes('vehiclestatus')) {
+                                return (
+                                    <TextField
+                                        key={key}
+                                        label={key}
+                                        name={key}
+                                        defaultValue={textFieldRefs.current[lowerKey] || ''}
+                                        inputRef={ref => textFieldRefs.current[lowerKey] = ref}
+                                        fullWidth
+                                        margin="normal"
+                                        variant="outlined"
+                                    />
+                                )
+                            }
+                        })}
+                        <Button sx={{ marginTop: '30px' }} type="submit" variant="contained" color="primary">
+                            Submit
+                        </Button>
+                    </form>
+                </Box>
+            );
+        }
+
+        if (type === 'edit') {
+            return (
+                <Box sx={createEditModalStyle}>
+                    <Typography sx={{ marginBottom: '20px' }} variant="h6">
+                        {type === 'create' ? 'Create new vehicle' : 'Edit existing vehicle'}
+                    </Typography>
+                    <form onSubmit={handleSubmit}>
+                        {tableTitle.slice(1).map((key) => {
+                            const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
+
+                            const dateString = textFieldRefs.current["insuranceExpiryDate"];
+                            const dateValue = dateString ? dayjs(dateString, "MM/DD/YYYY") : dayjs();
+
+                            if (key.toLowerCase().includes('insuranceexpirydate')) {
+                                return (
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                        <DatePicker
+                                            label="insuranceExpiryDate"
+                                            defaultValue={dateValue}
+                                            inputRef={ref => { textFieldRefs.current["insuranceExpiryDate"] = ref; }}
+                                            slots={{
+                                                textField: (params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        fullWidth
+                                                        margin="normal"
+                                                        variant="outlined"
+                                                    />
+                                                ),
+                                            }}
+                                        />
+                                    </LocalizationProvider>
+                                );
+                            }
+
+                            if (!key.toLowerCase().includes('vehiclestatus')) {
+                                return (
+                                    <TextField
+                                        key={key}
+                                        label={key}
+                                        name={key}
+                                        defaultValue={textFieldRefs.current[lowerKey] || ''}
+                                        inputRef={ref => textFieldRefs.current[lowerKey] = ref}
+                                        fullWidth
+                                        margin="normal"
+                                        variant="outlined"
+                                    />
+                                )
+                            }
+                        })}
+                        <Button sx={{ marginTop: '30px' }} type="submit" variant="contained" color="primary">
+                            Submit
+                        </Button>
+                    </form>
+                </Box>
+            );
+        }
+    };
+
+    const packageModalContent = () => {
+        const { type } = modalState;
+
+        if (type === 'delete') {
+            return (
+                <Box sx={deleteModalStyle}>
+                    <form onSubmit={handleSubmit}>
+                        <Typography sx={{ marginBottom: '30px', marginLeft: '25px' }} variant="h6" component="h2">
+                            Are you sure to delete this package?
                         </Typography>
                         <Button sx={{ marginTop: '10px', marginRight: '120px' }} type="submit" variant="contained" color="error">
                             Submit
@@ -631,13 +765,13 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                         {tableTitle.slice(1).map((key) => {
                             const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
                             if (key.toLowerCase().includes('pickupdate')) {
-                                
-                                const dateString = textFieldRefs.current["pickupDate"];                                                            
-                                const dateValue = dateString ? dayjs(dateString, "MM/DD/YYYY") : dayjs();                   
 
-                                const timeString = textFieldRefs.current["pickupTime"];                                                            
-                                const timeValue = timeString ? dayjs(timeString, "hh:mm A") : dayjs();    
-                                                       
+                                const dateString = textFieldRefs.current["pickupDate"];
+                                const dateValue = dateString ? dayjs(dateString, "MM/DD/YYYY") : dayjs();
+
+                                const timeString = textFieldRefs.current["pickupTime"];
+                                const timeValue = timeString ? dayjs(timeString, "hh:mm A") : dayjs();
+
                                 return (
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                                         <Box sx={{ marginTop: '10px' }}>
@@ -646,27 +780,31 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                                                     label="PickupDate"
                                                     defaultValue={dateValue}
                                                     inputRef={ref => { textFieldRefs.current["pickupDate"] = ref; }}
-                                                    renderInput={(params) => (
-                                                        <TextField
-                                                            {...params}
-                                                            fullWidth
-                                                            margin="normal"
-                                                            variant="outlined"
-                                                        />
-                                                    )}
+                                                    slots={{
+                                                        textField: (params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                fullWidth
+                                                                margin="normal"
+                                                                variant="outlined"
+                                                            />
+                                                        ),
+                                                    }}
                                                 />
                                                 <TimePicker
                                                     label="PickupTime"
                                                     defaultValue={timeValue}
                                                     inputRef={ref => { textFieldRefs.current["pickupTime"] = ref; }}
-                                                    renderInput={(params) => (
-                                                        <TextField
-                                                            {...params}
-                                                            fullWidth
-                                                            margin="normal"
-                                                            variant="outlined"
-                                                        />
-                                                    )}
+                                                    slots={{
+                                                        textField: (params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                fullWidth
+                                                                margin="normal"
+                                                                variant="outlined"
+                                                            />
+                                                        ),
+                                                    }}
                                                 />
                                             </Stack>
                                         </Box>
@@ -701,12 +839,38 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
             )
         }
     }
+    
+    const getModalContent = () => {
+        switch (title.toLowerCase()) {
+            case "vehicleinfo table":
+                return vehicleModalContent();
+            case "packageinfo table":
+                return packageModalContent();
+            default:
+                return modalContent();
+        }
+    }
 
     const getProcessNameById = (id) => {
         const process = packageWayProcess.find(p => p.id === id);
         return process ? process.wayProcess : 'Unknown Process';
     };
 
+    const getVehicleStatus = (id) => {        
+        const vehiclestatus = vehicleStatus.find(p => p.id === id);        
+        return vehiclestatus ? vehiclestatus.vehiclestatus : 'Unknown Status';
+    };
+
+    const getRowData = (column,row,value) => {          
+        switch (column) {
+            case "PackageWayProcess":
+                return getProcessNameById(row["packageWayProcess"])                
+            case "VehicleStatus":
+                return getVehicleStatus(row["vehicleStatus"])                
+            default:                
+                return value === "" || value === 0 ? <div>-</div> : value            
+        }
+    }
 
     return (
         <>
@@ -716,11 +880,12 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >
-                {title.toLowerCase().includes('package') ?
+                {/* {title.toLowerCase().includes('package') ?
                     packageModalContent()
                     :
                     modalContent()
-                }
+                } */}
+                {getModalContent()}
             </Modal>
             <Snackbar
                 open={snackBarState.open}
@@ -787,11 +952,12 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                                         const value = row[column.charAt(0).toLowerCase() + column.slice(1)]
                                         return (
                                             < TableCell key={colIndex} style={{ textAlign: 'center' }}>
-                                                {column === "PackageWayProcess" ?
+                                                {/* {column === "PackageWayProcess" ?
                                                     getProcessNameById(row["packageWayProcess"])
                                                     :
                                                     value === "" || value === 0 ? <div>-</div> : value
-                                                }
+                                                } */}
+                                                {getRowData(column,row,value)}
                                             </TableCell>
                                         )
                                     })}

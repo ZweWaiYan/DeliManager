@@ -1,7 +1,6 @@
 import axios from "axios";
 
-export const signIn = async (values) => {
-    console.log("signIn api" , values)
+export const signIn = async (values) => {    
     var result = { Status: true, Message: "", Data: null };
     try {
         const response = await axios.post(`/api/Auth/SignIn`, values );
