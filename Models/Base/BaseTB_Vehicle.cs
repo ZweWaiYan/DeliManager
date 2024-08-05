@@ -33,10 +33,10 @@ namespace DeliManager.Models.Base
         public virtual List<string> GetVehicleColumnQuery()
         {
             var list = new List<string>();
-           var dt = this.GetVehicleColumn();
-             for (var i = 0; i < dt.Rows.Count - 5; i++)
+            var dt = this.GetVehicleColumn();
+            for (var i = 0; i < dt.Rows.Count - 5; i++)
             {
-                var row = dt.Rows[i];                
+                var row = dt.Rows[i];
                 list.Add(row.ItemArray[0].ToString());
             }
             return list;
@@ -70,10 +70,10 @@ namespace DeliManager.Models.Base
                 columnList.Add("Manufacturer");
                 paramList.Add("@Manufacturer");
             }
-            if (!srcClass.IsDeliveryIdNull())
+            if (!srcClass.IsDeliverymanIdNull())
             {
-                columnList.Add("DeliveryId");
-                paramList.Add("@DeliveryId");
+                columnList.Add("DeliverymanId");
+                paramList.Add("@DeliverymanId");
             }
             if (!srcClass.IsVehicleStatusNull())
             {
@@ -94,6 +94,11 @@ namespace DeliManager.Models.Base
             {
                 columnList.Add("FuelLevel");
                 paramList.Add("@FuelLevel");
+            }
+            if (!srcClass.IsRouteIdNull())
+            {
+                columnList.Add("RouteId");
+                paramList.Add("@RouteId");
             }
             if (!srcClass.IsCompanyIdNull())
             {
@@ -138,12 +143,12 @@ namespace DeliManager.Models.Base
         #endregion
 
         #region "Update Data"
-        public virtual int EditVehicleQuery( DbConnection con, DbTransaction tran, BaseTB_VehicleEntity srcClass = null)
+        public virtual int EditVehicleQuery(DbConnection con, DbTransaction tran, BaseTB_VehicleEntity srcClass = null)
         {
             srcClass ??= this;
 
             var setList = new List<string>();
-            
+
             if (!srcClass.IsLicensePlateNull())
             {
                 setList.Add("LicensePlate = @LicensePlate");
@@ -156,7 +161,7 @@ namespace DeliManager.Models.Base
             {
                 setList.Add("Manufacturer = @Manufacturer");
             }
-            if (!srcClass.IsDeliveryIdNull())
+            if (!srcClass.IsDeliverymanIdNull())
             {
                 setList.Add("DeliveryId = @DeliveryId");
             }
@@ -175,6 +180,10 @@ namespace DeliManager.Models.Base
             if (!srcClass.IsFuelLevelNull())
             {
                 setList.Add("FuelLevel = @FuelLevel");
+            }
+            if (!srcClass.IsRouteIdNull())
+            {
+                setList.Add("RouteId = @RouteId");
             }
             if (!srcClass.IsCompanyIdNull())
             {
@@ -212,9 +221,9 @@ namespace DeliManager.Models.Base
         #endregion
 
         #region "Delete Data"
-        public virtual int DeleteVehicleQuery( DbConnection con, DbTransaction tran, BaseTB_VehicleEntity srcClass = null)
+        public virtual int DeleteVehicleQuery(DbConnection con, DbTransaction tran, BaseTB_VehicleEntity srcClass = null)
         {
-             srcClass ??= this;
+            srcClass ??= this;
 
             var sql = new StringBuilder();
             sql.AppendLine(" DELETE [Vehicle] ");
@@ -226,6 +235,77 @@ namespace DeliManager.Models.Base
         }
         #endregion
 
+        #region "Update Vehicle Status , set RouteId and set DeliverymanId"
+        public virtual int UpdateVehicleStatusQuery(int? routeId, int vehicleId, int deliverymanId, int vehicleStatus)
+        {
+            var sqlCheck = new StringBuilder();
+            using var con = DataBase.GetConnection();
+
+            sqlCheck.AppendLine(" UPDATE [Vehicle] ");
+            sqlCheck.AppendFormat(" SET VehicleStatus = '{0}', RouteId = '{1}' , DeliverymanId = '{2}'", vehicleStatus, routeId, deliverymanId);
+            sqlCheck.AppendLine(" WHERE ");
+            sqlCheck.AppendFormat("  VehicleId = '{0}'", vehicleId);
+
+            var result = DataBase.ExecuteNonQuery(con, sqlCheck.ToString());
+            return result;
+        }
+        #endregion
+
+        #region "Update Vehicle Status and RouteId with Case for only Editing"
+        public virtual int UpdateVehicleStatusWithCaseQuery(int routeId, int vehicleId, int deliverymanId)
+        {
+            var sqlCheck = new StringBuilder();
+            using var con = DataBase.GetConnection();
+
+            // sqlCheck.AppendLine("UPDATE [Vehicle] SET ");
+
+            // sqlCheck.AppendLine(" DeliverymanId = CASE  ");
+            // sqlCheck.AppendFormat(" WHEN RouteId = '{0}' AND VehicleId != '{1}' THEN 0", routeId, vehicleId);
+            // sqlCheck.AppendFormat(" WHEN VehicleId = '{0}' THEN '{1}' ", vehicleId, deliverymanId);
+            // sqlCheck.AppendLine(" ELSE DeliverymanId ");
+            // sqlCheck.AppendLine(" END , ");
+
+            // sqlCheck.AppendLine(" VehicleStatus = CASE ");
+            // sqlCheck.AppendFormat(" WHEN RouteId = '{0}' THEN 1 ", routeId);
+            // sqlCheck.AppendFormat(" WHEN VehicleId = '{0}' THEN 2 ", vehicleId);
+            // sqlCheck.AppendLine(" ELSE VehicleStatus ");
+            // sqlCheck.AppendLine(" END , ");
+
+
+            // sqlCheck.AppendLine(" RouteId = CASE ");
+            // sqlCheck.AppendFormat(" WHEN RouteId = '{0}' AND VehicleId != '{1}' THEN 0 ", routeId, vehicleId);
+            // sqlCheck.AppendFormat(" WHEN VehicleId = '{0}' THEN {1} ", vehicleId, routeId);
+            // sqlCheck.AppendLine(" ELSE RouteId ");
+            // sqlCheck.AppendLine(" END ");
+
+            // sqlCheck.AppendLine(" WHERE ");
+            // sqlCheck.AppendFormat("  RouteId = '{0}' OR VehicleId = '{1}' ", routeId, vehicleId);                             
+        
+            sqlCheck.AppendLine("UPDATE [Vehicle] SET ");
+
+            sqlCheck.AppendLine(" DeliverymanId = CASE  ");
+            sqlCheck.AppendFormat("  WHEN VehicleId = {0} THEN {1} ", vehicleId , deliverymanId);
+            sqlCheck.AppendFormat("  WHEN RouteId = {0} THEN 0 ", routeId);            
+            sqlCheck.AppendLine(" END , ");
+
+            sqlCheck.AppendLine(" VehicleStatus = CASE ");
+            sqlCheck.AppendFormat(" WHEN VehicleId = {0} THEN 2  ", vehicleId);
+            sqlCheck.AppendFormat("  WHEN RouteId = {0} THEN 1  ", routeId);            
+            sqlCheck.AppendLine(" END , ");
+
+            sqlCheck.AppendLine(" RouteId = CASE ");
+            sqlCheck.AppendFormat(" WHEN VehicleId = {0} THEN {1} ", vehicleId , routeId);
+            sqlCheck.AppendFormat(" WHEN RouteId = {0} THEN 0  ", routeId);            
+            sqlCheck.AppendLine(" END ");
+
+            sqlCheck.AppendLine(" WHERE ");
+            sqlCheck.AppendFormat("  RouteId = '{0}' OR VehicleId = '{1}' ", routeId, vehicleId);
+
+            var result = DataBase.ExecuteNonQuery(con, sqlCheck.ToString());
+            return result;
+        }
+        #endregion
+
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Parameter functions
 
@@ -233,42 +313,43 @@ namespace DeliManager.Models.Base
         {
 
             var param = new QueryParamList
-            {                
+            {
                 { "@VehicleId", srcClass.VehicleId},
                 { "@LicensePlate", srcClass.LicensePlate },
                 { "@Modal", srcClass.Modal },
                 { "@Manufacturer", srcClass.Manufacturer },
-                { "@DeliveryId", srcClass.DeliveryId },
+                { "@DeliverymanId", srcClass.DeliverymanId },
                 { "@VehicleStatus", srcClass.VehicleStatus },
                 { "@Capacity", srcClass.Capacity },
                 { "@InsuranceExpiryDate", srcClass.InsuranceExpiryDate },
-                { "@FuelLevel", srcClass.FuelLevel },                
+                { "@FuelLevel", srcClass.FuelLevel },
+                { "@RouteId", srcClass.RouteId },
                 { "@CompanyId", srcClass.CompanyId },
                 { "@Createdby", srcClass.CreatedBy },
                 { "@CreatedDate", srcClass.CreatedDate },
                 { "@Updatedby", srcClass.UpdatedBy },
                 { "@UpdatedDate", srcClass.UpdatedDate }
             };
-           
+
             return param;
         }
 
-          public virtual int GetCountVehicleQuery(int? companyId)
+        public virtual int GetCountVehicleQuery(int? companyId)
         {
             var sql = new StringBuilder();
             sql.AppendLine(" SELECT ");
             sql.AppendLine("   COUNT(1) ");
             sql.AppendLine(" FROM ");
             sql.AppendLine(" [Vehicle] ");
-            sql.AppendFormat(" WHERE CompanyId = {0} ", companyId);            
+            sql.AppendFormat(" WHERE CompanyId = {0} ", companyId);
             return (int)DataBase.ExecuteScalar(sql.ToString());
         }
 
 
         public virtual DataTable GetVehicleColumn()
-        {            
+        {
             var sql = new StringBuilder();
-            sql.AppendLine("SELECT name FROM sys.columns WHERE object_id = OBJECT_ID('Vehicle')");                           
+            sql.AppendLine("SELECT name FROM sys.columns WHERE object_id = OBJECT_ID('Vehicle')");
             return DataBase.ExecuteAdapter(sql.ToString());
         }
 
@@ -278,23 +359,24 @@ namespace DeliManager.Models.Base
             sql.AppendLine(" SELECT ");
             sql.AppendLine(" * FROM ");
             sql.AppendLine(" [Vehicle]");
-            sql.AppendFormat(" WHERE [Vehicle].CompanyId = {0} ", companyId);           
+            sql.AppendFormat(" WHERE [Vehicle].CompanyId = {0} ", companyId);
             return DataBase.ExecuteAdapter(sql.ToString());
         }
 
-         public virtual void SetVehicleData(
-          BaseTB_VehicleEntity targetClass,
-          DataRow row)
+        public virtual void SetVehicleData(
+         BaseTB_VehicleEntity targetClass,
+         DataRow row)
         {
             targetClass.VehicleId = NullableValueExtension.DBNullToIntegerZero(row["VehicleId"]);
             targetClass.LicensePlate = row["LicensePlate"].ToString();
             targetClass.Modal = row["Modal"].ToString();
             targetClass.Manufacturer = row["Manufacturer"].ToString();
-            targetClass.DeliveryId = NullableValueExtension.DBNullToIntegerZero(row["DeliveryId"]);
+            targetClass.DeliverymanId = NullableValueExtension.DBNullToIntegerZero(row["DeliverymanId"]);
             targetClass.VehicleStatus = NullableValueExtension.DBNullToIntegerZero(row["VehicleStatus"].ToString());
             targetClass.Capacity = NullableValueExtension.DBNullToIntegerZero(row["Capacity"]);
             targetClass.InsuranceExpiryDate = row["InsuranceExpiryDate"].ToString();
             targetClass.FuelLevel = NullableValueExtension.DBNullToDoubleZero(row["FuelLevel"].ToString());
+            targetClass.RouteId = NullableValueExtension.DBNullToIntegerZero(row["RouteId"]);
             targetClass.CompanyId = NullableValueExtension.DBNullToIntegerZero(row["CompanyId"]);
             targetClass.CreatedDate = NullableValueExtension.ToForceDateTime(row["CreatedDate"].ToString());
             targetClass.CreatedBy = row["CreatedBy"].ToString();
@@ -302,7 +384,7 @@ namespace DeliManager.Models.Base
             targetClass.UpdatedBy = row["UpdatedBy"].ToString();
         }
 
-          public bool HasDuplicatedVehicle(String licensePlate, int? companyId)
+        public bool HasDuplicatedVehicle(String licensePlate, int? companyId)
         {
             var sqlCheck = new StringBuilder();
             sqlCheck.AppendLine("SELECT count(*) from [Vehicle]");

@@ -23,18 +23,22 @@ export const FetchDeliverymanList = async (companyId) => {
 };
 
 export const CreateDeliveryman = async (deliverymanValues, companyId) => {
-    var result = { Status: true, Message: "", Data: null};    
+    var result = { Status: true, Message: "", Data: null};        
     let data = {
         DeliverymanName: deliverymanValues.deliverymanName,
-        DeliverymanPh: deliverymanValues.deliverymanPh,
+        DeliverymanPh: deliverymanValues.deliverymanPh,        
         DeliverymanAddress: deliverymanValues.deliverymanAddress,
+        DeliverymanStatus : 1,
         DeliverymanNRC: deliverymanValues.deliverymanNRC,
+        DeliverymanLicenseNo: deliverymanValues.deliverymanLicenseNo,
         // DeliverymanImage: deliverymanValues.DeliverymanImage.value,
+        RouteId : 0,
         DeliverymanAge: parseInt(deliverymanValues.deliverymanAge),
         CompanyId: companyId,
-    };        
+    };         
     try {
-        const response = await axios.post(`/api/Deliveryman/CreateDeliveryman`, data);      
+        const response = await axios.post(`/api/Deliveryman/CreateDeliveryman`, data);    
+        console.log("respnose" , response);  
         if (response && response.status === 200) {
             return response.data;
         } else {
@@ -58,9 +62,11 @@ export const EditDeliveryman = async (id , deliverymanValues, companyId) => {
     let data = {
         DeliverymanId: id,
         DeliverymanName: deliverymanValues.deliverymanName,
-        DeliverymanPh: deliverymanValues.deliverymanPh,
+        DeliverymanPh: deliverymanValues.deliverymanPh,        
         DeliverymanAddress: deliverymanValues.deliverymanAddress,
+        DeliverymanStatus : 1,
         DeliverymanNRC: deliverymanValues.deliverymanNRC,
+        DeliverymanLicenseNo: deliverymanValues.DeliverymanLicenseNo,
         // DeliverymanImage: deliverymanValues.DeliverymanImage.value,
         DeliverymanAge: parseInt(deliverymanValues.deliverymanAge),
         CompanyId: companyId,

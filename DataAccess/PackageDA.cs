@@ -46,6 +46,7 @@ namespace DeliManager.DataAccess
                     ReceivedDate = row.ReceivedDate, 
                     ReceivedTime = row.ReceivedTime,
                     CompanyId = row.CompanyId,  
+                    RouteId = row.RouteId,
                     CreatedBy = row.CreatedBy,
                     CreatedDate = row.CreatedDate,
                     UpdatedBy = row.UpdatedBy,

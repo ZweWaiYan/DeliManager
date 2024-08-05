@@ -59,7 +59,7 @@ namespace DeliManager.Models.Base
             {
                 columnList.Add("CompanyId");
                 paramList.Add("@CompanyId");
-            }        
+            }
             if (!srcClass.IsPackageTitleNull())
             {
                 columnList.Add("PackageTitle");
@@ -89,7 +89,7 @@ namespace DeliManager.Models.Base
             {
                 columnList.Add("CollectMoney");
                 paramList.Add("@CollectMoney");
-            }          
+            }
             if (!srcClass.IsSenderNameNull())
             {
                 columnList.Add("SenderName");
@@ -110,7 +110,7 @@ namespace DeliManager.Models.Base
                 columnList.Add("PickupDate");
                 paramList.Add("@PickupDate");
             }
-             if (!srcClass.IsPickupTimeNull())
+            if (!srcClass.IsPickupTimeNull())
             {
                 columnList.Add("PickupTime");
                 paramList.Add("@PickupTime");
@@ -139,6 +139,11 @@ namespace DeliManager.Models.Base
             {
                 columnList.Add("ReceivedTime");
                 paramList.Add("@ReceivedTime");
+            }
+            if (!srcClass.IsRouteIdNull())
+            {
+                columnList.Add("RouteId");
+                paramList.Add("@RouteId");
             }
             if (!srcClass.IsCreatedByNull())
             {
@@ -211,7 +216,7 @@ namespace DeliManager.Models.Base
             if (!srcClass.IsCollectMoneyNull())
             {
                 setList.Add("CollectMoney = @CollectMoney");
-            }           
+            }
             if (!srcClass.IsSenderNameNull())
             {
                 setList.Add("SenderName = @SenderName");
@@ -228,7 +233,7 @@ namespace DeliManager.Models.Base
             {
                 setList.Add("PickupDate = @PickupDate");
             }
-             if (!srcClass.IsPickupTimeNull())
+            if (!srcClass.IsPickupTimeNull())
             {
                 setList.Add("PickupTime = @PickupTime");
             }
@@ -255,6 +260,10 @@ namespace DeliManager.Models.Base
             if (!srcClass.IsCompanyIdNull())
             {
                 setList.Add("CompanyId = @CompanyId");
+            }
+            if (!srcClass.IsRouteIdNull())
+            {
+                setList.Add("RouteId = @RouteId");
             }
             if (!srcClass.IsCreatedByNull())
             {
@@ -311,23 +320,24 @@ namespace DeliManager.Models.Base
             var param = new QueryParamList
             {
                 { "@packageId" , srcClass.PackageId},
-                { "@CompanyId", srcClass.CompanyId },               
+                { "@CompanyId", srcClass.CompanyId },
                 { "@PackageTitle" , srcClass.PackageTitle},
                 { "@PackageQty" , srcClass.PackageQty},
                 { "@PackageWayProcess" , srcClass.PackageWayProcess},
                 { "@PackagePrice" , srcClass.PackagePrice},
                 { "@DeliFee" , srcClass.DeliFee},
-                { "@CollectMoney" , srcClass.CollectMoney},                
+                { "@CollectMoney" , srcClass.CollectMoney},
                 { "@SenderName" , srcClass.SenderName},
                 { "@SenderPh" , srcClass.SenderPh},
                 { "@SenderAddress" , srcClass.SenderAddress},
-                { "@PickupDate" , srcClass.PickupDate},                
-                { "@PickupTime" , srcClass.PickupTime},                
+                { "@PickupDate" , srcClass.PickupDate},
+                { "@PickupTime" , srcClass.PickupTime},
                 { "@ReceiverName" , srcClass.ReceiverName},
                 { "@ReceiverPh" , srcClass.ReceiverPh},
                 { "@ReceiverAddress" , srcClass.ReceiverAddress},
                 { "@ReceivedDate" , srcClass.ReceivedDate},
                 { "@ReceivedTime" , srcClass.ReceivedTime},
+                { "@RouteId" , srcClass.RouteId},
                 { "@Createdby", srcClass.CreatedBy },
                 { "@CreatedDate", srcClass.CreatedDate },
                 { "@Updatedby", srcClass.UpdatedBy },
@@ -348,6 +358,115 @@ namespace DeliManager.Models.Base
             return (int)DataBase.ExecuteScalar(sql.ToString());
         }
 
+        #region "Update Package Status"
+        public virtual int UpdatePackageStatusQuery(int? routeId, string packageIds, int deliverymanId, int packageWayProcess)
+        {
+            var sqlCheck = new StringBuilder();
+            using var con = DataBase.GetConnection();
+
+            var packageIdArray = packageIds.Split(',');
+            var validPackageIds = new List<int>();
+            foreach (var id in packageIdArray)
+            {
+                if (int.TryParse(id, out int packageId))
+                {
+                    validPackageIds.Add(packageId);
+                }
+                else
+                {
+                    throw new ArgumentException($"Invalid package ID: {id}");
+                }
+            }
+
+            if (validPackageIds.Count == 0)
+            {
+                return 0;
+            }
+
+            sqlCheck.AppendLine(" UPDATE [Package] ");
+            sqlCheck.AppendFormat(" SET PackageWayProcess = '{0}', RouteId = '{1}' , DeliverymanId = '{2}'", packageWayProcess, routeId, deliverymanId);
+            sqlCheck.AppendLine(" WHERE ");
+            sqlCheck.AppendFormat("  PackageId IN ({0})", string.Join(",", validPackageIds));
+
+            var result = DataBase.ExecuteNonQuery(con, sqlCheck.ToString());
+            return result;
+        }
+        #endregion
+
+        #region "Update Package Status and RouteId with Case for only Editing""
+        public virtual int UpdatePackageStatusQueryWithCase(int? routeId, string packageIds, int deliverymanId)
+        {
+            var sqlCheck = new StringBuilder();
+            using var con = DataBase.GetConnection();
+
+            var packageIdArray = packageIds.Split(',');
+            var validPackageIds = new List<int>();
+            foreach (var id in packageIdArray)
+            {
+                if (int.TryParse(id, out int packageId))
+                {
+                    validPackageIds.Add(packageId);
+                }
+                else
+                {
+                    throw new ArgumentException($"Invalid package ID: {id}");
+                }
+            }
+
+            if (validPackageIds.Count == 0)
+            {
+                return 0;
+            }        
+
+            // sqlCheck.AppendLine(" UPDATE [Package] ");
+            // sqlCheck.AppendLine(" SET ");
+
+            // sqlCheck.AppendLine(" DeliverymanId = CASE ");
+            // sqlCheck.AppendFormat(" WHEN RouteID = {0} AND PackageId NOT IN ({1}) THEN 0", routeId, string.Join(",", validPackageIds));
+            // sqlCheck.AppendFormat(" WHEN PackageId IN ({0}) THEN 1", string.Join(",", validPackageIds));
+            // sqlCheck.AppendLine(" ELSE DeliverymanId ");
+            // sqlCheck.AppendLine(" END,");
+
+            // sqlCheck.AppendLine(" PackageWayProcess = CASE ");
+            // sqlCheck.AppendFormat(" WHEN RouteId = {0} THEN 1", routeId);
+            // sqlCheck.AppendFormat(" WHEN PackageId IN ({0}) THEN 4", string.Join(",", validPackageIds));
+            // sqlCheck.AppendLine(" ELSE PackageWayProcess ");
+            // sqlCheck.AppendLine(" END,");
+
+            // sqlCheck.AppendLine(" RouteId = CASE ");
+            // sqlCheck.AppendFormat(" WHEN RouteId = {0} AND PackageId NOT IN ({0}) THEN 0", routeId, string.Join(",", validPackageIds));
+            // sqlCheck.AppendFormat("WHEN PackageId IN ({0}) THEN {1}", string.Join(",", validPackageIds), routeId);
+            // sqlCheck.AppendLine(" ELSE RouteId ");
+            // sqlCheck.AppendLine(" END");
+
+            // sqlCheck.AppendLine(" WHERE ");
+            // sqlCheck.AppendFormat("  RouteId = {0} OR PackageId IN ({1})", routeId, string.Join(",", validPackageIds));
+
+            sqlCheck.AppendLine(" UPDATE [Package] ");
+            sqlCheck.AppendLine(" SET ");
+
+            sqlCheck.AppendLine(" DeliverymanId = CASE ");
+            sqlCheck.AppendFormat(" WHEN PackageId IN ({0}) THEN {1}", string.Join(",", validPackageIds) , deliverymanId);
+            sqlCheck.AppendFormat(" WHEN RouteId = {0} THEN 0", routeId);            
+            sqlCheck.AppendLine(" END,");
+
+            sqlCheck.AppendLine(" PackageWayProcess = CASE ");
+            sqlCheck.AppendFormat(" WHEN PackageId IN ({0}) THEN 4", string.Join(",", validPackageIds));
+            sqlCheck.AppendFormat("  WHEN RouteId = {0} THEN 1", routeId);         
+            sqlCheck.AppendLine(" END,");
+
+            sqlCheck.AppendLine(" RouteId = CASE ");
+            sqlCheck.AppendFormat(" WHEN PackageId IN ({0}) THEN {1}", string.Join(",", validPackageIds) , routeId);
+            sqlCheck.AppendFormat("WHEN RouteId = ({0}) THEN 0", routeId);            
+            sqlCheck.AppendLine(" END");
+
+            sqlCheck.AppendLine(" WHERE ");
+            sqlCheck.AppendFormat(" RouteId = {0} OR PackageId IN ({1});", routeId, string.Join(",", validPackageIds));
+
+            var result = DataBase.ExecuteNonQuery(con, sqlCheck.ToString());
+            return result;
+        }
+        #endregion      
 
         public virtual DataTable GetPackageColumn()
         {
@@ -378,7 +497,7 @@ namespace DeliManager.Models.Base
             targetClass.PackageWayProcess = NullableValueExtension.DBNullToIntegerZero(row["PackageWayProcess"]);
             targetClass.PackagePrice = NullableValueExtension.DBNullToDoubleZero(row["PackagePrice"]);
             targetClass.DeliFee = NullableValueExtension.DBNullToDoubleZero(row["DeliFee"]);
-            targetClass.CollectMoney = NullableValueExtension.DBNullToDoubleZero(row["CollectMoney"]);         
+            targetClass.CollectMoney = NullableValueExtension.DBNullToDoubleZero(row["CollectMoney"]);
             targetClass.SenderName = row["SenderName"].ToString();
             targetClass.SenderAddress = row["SenderAddress"].ToString();
             targetClass.SenderPh = row["SenderPh"].ToString();
@@ -389,6 +508,7 @@ namespace DeliManager.Models.Base
             targetClass.ReceiverPh = row["ReceiverPh"].ToString();
             targetClass.ReceivedDate = row["ReceivedDate"].ToString();
             targetClass.ReceivedTime = row["ReceivedTime"].ToString();
+            targetClass.RouteId = NullableValueExtension.DBNullToIntegerZero(row["RouteId"]);
             targetClass.CreatedBy = row["CreatedBy"].ToString();
             targetClass.CreatedDate = NullableValueExtension.ToForceDateTime(row["CreatedDate"].ToString());
             targetClass.UpdatedBy = row["UpdatedBy"].ToString();

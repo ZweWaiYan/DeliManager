@@ -1,8 +1,8 @@
-const vehicleStatus = [
-    { id: 1, vehiclestatus: 'Available' },
-    { id: 2, vehiclestatus: 'In Transit' },
-    { id: 3, vehiclestatus: 'Maintenance' },
-    { id: 4, vehiclestatus: 'Out of Service' },
+const VehicleStatus = [
+    { id: 1, status: 'Available' },
+    { id: 2, status: 'In Transit' },
+    { id: 3, status: 'Maintenance' },
+    { id: 4, status: 'Out of Service' },
 ];
 
-export default vehicleStatus;
+export default VehicleStatus;

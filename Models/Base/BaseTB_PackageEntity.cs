@@ -26,6 +26,7 @@ namespace DeliManager.Models.Base
         private String _receiverAddress;
         private String _receivedDate;
         private String _receivedTime;
+        private Int32? _routeId;
         private Int32? _companyId;
         private String _createdBy;
         private DateTime? _createdDate;
@@ -52,6 +53,7 @@ namespace DeliManager.Models.Base
         public String ReceiverAddress { get { return this._receiverAddress.ToNonNullable(); } set { this._receiverAddress = value; } }
         public String ReceivedDate { get { return this._receivedDate.ToNonNullable(); } set { this._receivedDate = value; } }
         public String ReceivedTime { get { return this._receivedTime.ToNonNullable(); } set { this._receivedTime = value; } }
+        public Int32? RouteId { get { return this._routeId.ToNonNullable(); } set { this._routeId = value; } }
         public Int32? CompanyId { get { return this._companyId.ToNonNullable(); } set { this._companyId = value; } }
         public String CreatedBy { get { return this._createdBy; } set { this._createdBy = value; } }
         public DateTime? CreatedDate { get { return this._createdDate.ToNonNullable(); } set { this._createdDate = value; } }
@@ -78,6 +80,7 @@ namespace DeliManager.Models.Base
         public bool IsReceiverAddressNull() { return this._receiverAddress == null; }
         public bool IsReceivedDateNull() { return this._receivedDate == null; }
         public bool IsReceivedTimeNull() { return this._receivedTime == null; }
+        public bool IsRouteIdNull() { return this._routeId == null; }
         public bool IsCompanyIdNull() { return this._companyId == null; }
         public bool IsCreatedByNull() { return this._createdBy == null; }
         public bool IsCreatedDateNull() { return this._createdDate == null; }
@@ -104,6 +107,7 @@ namespace DeliManager.Models.Base
         public void SetReceiverAddressNull() { this._receiverAddress = null; }
         public void SetReceivedDateNull() { this._receivedDate = null; }
         public void SetReceivedTimeNull() { this._receivedTime = null; }
+        public void SetRouteIdNull() { this._routeId = null; }
         public void SetCompanyIdNull() { this._companyId = null; }
         public void SetCreatedByNull() { this._createdBy = null; }
         public void SetCreatedDateNull() { this._createdDate = null; }

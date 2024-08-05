@@ -33,10 +33,10 @@ namespace DeliManager.Models.Base
         public virtual List<string> GetDeliverymanColumnQuery()
         {
             var list = new List<string>();
-           var dt = this.GetDeliverymanColumn();
-             for (var i = 0; i < dt.Rows.Count - 5; i++)
+            var dt = this.GetDeliverymanColumn();
+            for (var i = 0; i < dt.Rows.Count - 5; i++)
             {
-                var row = dt.Rows[i];                
+                var row = dt.Rows[i];
                 list.Add(row.ItemArray[0].ToString());
             }
             return list;
@@ -70,6 +70,16 @@ namespace DeliManager.Models.Base
                 columnList.Add("DeliverymanAddress");
                 paramList.Add("@DeliverymanAddress");
             }
+            if (!srcClass.IsDeliverymanStatusNull())
+            {
+                columnList.Add("DeliverymanStatus");
+                paramList.Add("@DeliverymanStatus");
+            }
+            if (!srcClass.IsDeliverymanLicenseNoNull())
+            {
+                columnList.Add("DeliverymanLicenseNo");
+                paramList.Add("@DeliverymanLicenseNo");
+            }
             if (!srcClass.IsDeliverymanNRCNull())
             {
                 columnList.Add("DeliverymanNRC");
@@ -84,6 +94,11 @@ namespace DeliManager.Models.Base
             {
                 columnList.Add("DeliverymanAge");
                 paramList.Add("@DeliverymanAge");
+            }
+            if (!srcClass.IsRouteIdNull())
+            {
+                columnList.Add("RouteId");
+                paramList.Add("@RouteId");
             }
             if (!srcClass.IsCompanyIdNull())
             {
@@ -128,7 +143,7 @@ namespace DeliManager.Models.Base
         #endregion
 
         #region "Update Data"
-        public virtual int EditDeliverymanQuery( DbConnection con, DbTransaction tran, BaseTB_DeliverymanEntity srcClass = null)
+        public virtual int EditDeliverymanQuery(DbConnection con, DbTransaction tran, BaseTB_DeliverymanEntity srcClass = null)
         {
             srcClass ??= this;
 
@@ -146,6 +161,14 @@ namespace DeliManager.Models.Base
             {
                 setList.Add("DeliverymanAddress = @DeliverymanAddress");
             }
+            if (!srcClass.IsDeliverymanStatusNull())
+            {
+                setList.Add("Status = @Status");
+            }
+            if (!srcClass.IsDeliverymanLicenseNoNull())
+            {
+                setList.Add("DeliverymanLicenseNo = @DeliverymanLicenseNo");
+            }
             if (!srcClass.IsDeliverymanNRCNull())
             {
                 setList.Add("DeliverymanNRC = @DeliverymanNRC");
@@ -157,6 +180,10 @@ namespace DeliManager.Models.Base
             if (!srcClass.IsDeliverymanAgeNull())
             {
                 setList.Add("DeliverymanAge = @DeliverymanAge");
+            }
+            if (!srcClass.IsRouteIdNull())
+            {
+                setList.Add("RouteId = @RouteId");
             }
             if (!srcClass.IsCompanyIdNull())
             {
@@ -194,9 +221,9 @@ namespace DeliManager.Models.Base
         #endregion
 
         #region "Delete Data"
-        public virtual int DeleteDeliverymanQuery( DbConnection con, DbTransaction tran, BaseTB_DeliverymanEntity srcClass = null)
+        public virtual int DeleteDeliverymanQuery(DbConnection con, DbTransaction tran, BaseTB_DeliverymanEntity srcClass = null)
         {
-             srcClass ??= this;
+            srcClass ??= this;
 
             var sql = new StringBuilder();
             sql.AppendLine(" DELETE [Deliveryman] ");
@@ -220,35 +247,38 @@ namespace DeliManager.Models.Base
                 { "@DeliverymanName", srcClass.DeliverymanName },
                 { "@DeliverymanPh", srcClass.DeliverymanPh },
                 { "@DeliverymanAddress", srcClass.DeliverymanAddress },
+                { "@DeliverymanStatus", srcClass.DeliverymanStatus},
+                { "@DeliverymanLicenseNo", srcClass.DeliverymanLicenseNo },
                 { "@DeliverymanNRC", srcClass.DeliverymanNRC },
                 { "@DeliverymanImage", srcClass.DeliverymanImage == "" ? null : srcClass.DeliverymanImage},
                 { "@DeliverymanAge", srcClass.DeliverymanAge == 0 ? null : srcClass.DeliverymanAge },
+                { "@RouteId", srcClass.RouteId },
                 { "@CompanyId", srcClass.CompanyId },
                 { "@Createdby", srcClass.CreatedBy },
                 { "@CreatedDate", srcClass.CreatedDate },
                 { "@Updatedby", srcClass.UpdatedBy },
                 { "@UpdatedDate", srcClass.UpdatedDate }
             };
-           
+
             return param;
         }
 
-          public virtual int GetCountDeliverymanQuery(int? companyId)
+        public virtual int GetCountDeliverymanQuery(int? companyId)
         {
             var sql = new StringBuilder();
             sql.AppendLine(" SELECT ");
             sql.AppendLine("   COUNT(1) ");
             sql.AppendLine(" FROM ");
             sql.AppendLine(" [Deliveryman] ");
-            sql.AppendFormat(" WHERE CompanyId = {0} ", companyId);            
+            sql.AppendFormat(" WHERE CompanyId = {0} ", companyId);
             return (int)DataBase.ExecuteScalar(sql.ToString());
         }
 
 
         public virtual DataTable GetDeliverymanColumn()
-        {            
+        {
             var sql = new StringBuilder();
-            sql.AppendLine("SELECT name FROM sys.columns WHERE object_id = OBJECT_ID('Deliveryman')");                           
+            sql.AppendLine("SELECT name FROM sys.columns WHERE object_id = OBJECT_ID('Deliveryman')");
             return DataBase.ExecuteAdapter(sql.ToString());
         }
 
@@ -258,21 +288,142 @@ namespace DeliManager.Models.Base
             sql.AppendLine(" SELECT ");
             sql.AppendLine(" * FROM ");
             sql.AppendLine(" [Deliveryman]");
-            sql.AppendFormat(" WHERE [Deliveryman].CompanyId = {0} ", companyId);           
+            sql.AppendFormat(" WHERE [Deliveryman].CompanyId = {0} ", companyId);
             return DataBase.ExecuteAdapter(sql.ToString());
         }
 
-         public virtual void SetDeliverymanData(
-          BaseTB_DeliverymanEntity targetClass,
-          DataRow row)
+
+        #region "Update Deliveryman Status and RouteId"
+        public virtual int UpdateDeliverymanStatusQuery(int? routeId, int deliverymanId, int deliverymanStatus)
+        {
+            var sqlCheck = new StringBuilder();
+            using var con = DataBase.GetConnection();
+            sqlCheck.AppendLine(" UPDATE [Deliveryman] ");
+            sqlCheck.AppendFormat(" SET DeliverymanStatus = '{0}' , RouteId = '{1}'", deliverymanStatus, routeId);
+            sqlCheck.AppendLine(" WHERE ");
+            sqlCheck.AppendFormat("  DeliverymanId = '{0}'", deliverymanId);
+
+            var result = DataBase.ExecuteNonQuery(con, sqlCheck.ToString());
+            return result;
+        }
+        #endregion
+
+        #region "Update Deliveryman Status and RouteId with Case for only Editing"
+        public virtual int UpdateDeliverymanStatusWithCaseQuery(int routeId, int deliverymanId, int vehicleId, string packageIds)
+        {
+            var sqlCheck = new StringBuilder();
+            using var con = DataBase.GetConnection();
+
+            // sqlCheck.AppendLine("UPDATE [Deliveryman] SET ");
+            // sqlCheck.AppendLine("  DeliverymanStatus = CASE ");
+            // sqlCheck.AppendFormat(" WHEN RouteId = '{0}' THEN 1 " , routeId);
+            // sqlCheck.AppendFormat(" WHEN DeliverymanId = '{0}' THEN 2 ", deliverymanId);
+            // sqlCheck.AppendLine(" ELSE DeliverymanStatus ");
+            // sqlCheck.AppendLine(" END , ");
+
+            // sqlCheck.AppendLine(" RouteId = CASE ");
+            // sqlCheck.AppendFormat(" WHEN RouteId = '{0}' AND DeliverymanId != '{1}' THEN 0 " , routeId , deliverymanId);
+            // sqlCheck.AppendFormat(" WHEN DeliverymanId = '{0}' THEN {1} ", deliverymanId , routeId);
+            // sqlCheck.AppendLine(" ELSE RouteId ");
+            // sqlCheck.AppendLine(" END ");
+
+            // sqlCheck.AppendLine(" WHERE ");
+            // sqlCheck.AppendFormat("  RouteId = '{0}' OR DeliverymanId = '{1}' ", routeId, deliverymanId);
+
+            var packageIdArray = packageIds.Split(',');
+            var validPackageIds = new List<int>();
+            foreach (var id in packageIdArray)
+            {
+                if (int.TryParse(id, out int packageId))
+                {
+                    validPackageIds.Add(packageId);
+                }
+                else
+                {
+                    throw new ArgumentException($"Invalid package ID: {id}");
+                }
+            }
+
+            if (validPackageIds.Count == 0)
+            {
+                return 0;
+            }
+
+            //Update Deliveryman table
+            sqlCheck.AppendLine("UPDATE [Deliveryman] SET ");
+            sqlCheck.AppendLine("  DeliverymanStatus = CASE ");
+            sqlCheck.AppendFormat(" WHEN DeliverymanId = {0} THEN 2 ", deliverymanId);
+            sqlCheck.AppendFormat(" WHEN RouteId = {0} THEN 1 ", routeId);
+            sqlCheck.AppendLine(" END , ");
+
+            sqlCheck.AppendLine(" RouteId = CASE ");
+            sqlCheck.AppendFormat(" WHEN DeliverymanId = {0} THEN {1} ", deliverymanId, routeId);
+            sqlCheck.AppendFormat(" WHEN RouteId = {0} THEN 0 ", routeId);
+            sqlCheck.AppendLine(" END ");
+
+            sqlCheck.AppendLine(" WHERE ");
+            sqlCheck.AppendFormat(" RouteId = {0} OR DeliverymanId = {1}; ", routeId, deliverymanId);
+
+            //Update Vehicle table
+            sqlCheck.AppendLine("UPDATE [Vehicle] SET ");
+            sqlCheck.AppendLine("  DeliverymanId = CASE ");
+            sqlCheck.AppendFormat(" WHEN VehicleId = {0} THEN {1} ", vehicleId, deliverymanId);
+            sqlCheck.AppendFormat(" WHEN RouteId = {0} THEN 0 ", routeId);
+            sqlCheck.AppendLine(" END , ");
+
+            sqlCheck.AppendLine(" VehicleStatus = CASE ");
+            sqlCheck.AppendFormat(" WHEN VehicleId = {0} THEN 2 ", vehicleId);
+            sqlCheck.AppendFormat(" WHEN RouteId = {0} THEN 1 ", routeId);
+            sqlCheck.AppendLine(" END , ");
+
+            sqlCheck.AppendLine(" RouteId = CASE ");
+            sqlCheck.AppendFormat(" WHEN VehicleId = {0} THEN {1} ", vehicleId, routeId);
+            sqlCheck.AppendFormat(" WHEN RouteId = {0} THEN 0 ", routeId);
+            sqlCheck.AppendLine(" END ");
+
+            sqlCheck.AppendLine(" WHERE ");
+            sqlCheck.AppendFormat(" RouteId = {0} OR VehicleId = {1}; ", routeId, vehicleId);
+
+            // -- Update Package table
+            sqlCheck.AppendLine("UPDATE [Package] SET ");
+            sqlCheck.AppendLine("  DeliverymanId = CASE ");
+            sqlCheck.AppendFormat(" WHEN PackageId IN ({0}) THEN {1} ", string.Join(",", validPackageIds), deliverymanId);
+            sqlCheck.AppendFormat(" WHEN RouteId = {0} THEN 0 ", routeId);
+            sqlCheck.AppendLine(" END ,");
+
+            sqlCheck.AppendLine(" PackageWayProcess = CASE ");
+            sqlCheck.AppendFormat(" WHEN PackageId IN ({0}) THEN 4 ", string.Join(",", validPackageIds));
+            sqlCheck.AppendFormat(" WHEN RouteId = {0} THEN 1 ", routeId);
+            sqlCheck.AppendLine(" END ,");
+
+            sqlCheck.AppendLine(" RouteId = CASE ");
+            sqlCheck.AppendFormat(" WHEN PackageId IN ({0}) THEN {1} ", string.Join(",", validPackageIds), routeId);
+            sqlCheck.AppendFormat(" WHEN RouteId = {0} THEN 0 ", routeId);
+            sqlCheck.AppendLine(" END ");
+
+            sqlCheck.AppendLine(" WHERE ");
+            sqlCheck.AppendFormat(" RouteId = {0} OR PackageId IN ({1}); ", routeId, string.Join(",", validPackageIds));
+
+            var result = DataBase.ExecuteNonQuery(con, sqlCheck.ToString());
+            return result;
+        }
+        #endregion
+
+
+        public virtual void SetDeliverymanData(
+         BaseTB_DeliverymanEntity targetClass,
+         DataRow row)
         {
             targetClass.DeliverymanId = NullableValueExtension.DBNullToIntegerZero(row["DeliverymanId"]);
             targetClass.DeliverymanName = row["DeliverymanName"].ToString();
             targetClass.DeliverymanPh = row["DeliverymanPh"].ToString();
+            targetClass.DeliverymanStatus = NullableValueExtension.DBNullToIntegerZero(row["DeliverymanStatus"]);
             targetClass.DeliverymanAddress = row["DeliverymanAddress"].ToString();
+            targetClass.DeliverymanLicenseNo = row["DeliverymanLicenseNo"].ToString();
             targetClass.DeliverymanNRC = row["DeliverymanNRC"].ToString();
             targetClass.DeliverymanImage = row["DeliverymanImage"].ToString();
             targetClass.DeliverymanAge = NullableValueExtension.DBNullToIntegerZero(row["DeliverymanAge"]);
+            targetClass.RouteId = NullableValueExtension.DBNullToIntegerZero(row["RouteId"]);
             targetClass.CompanyId = NullableValueExtension.DBNullToIntegerZero(row["CompanyId"]);
             targetClass.CreatedDate = NullableValueExtension.ToForceDateTime(row["CreatedDate"].ToString());
             targetClass.CreatedBy = row["CreatedBy"].ToString();
@@ -280,7 +431,7 @@ namespace DeliManager.Models.Base
             targetClass.UpdatedBy = row["UpdatedBy"].ToString();
         }
 
-          public bool HasDuplicatedDeliveryman(String phNo, int? companyId)
+        public bool HasDuplicatedDeliveryman(String phNo, int? companyId)
         {
             var sqlCheck = new StringBuilder();
             sqlCheck.AppendLine("SELECT count(*) from [Deliveryman]");

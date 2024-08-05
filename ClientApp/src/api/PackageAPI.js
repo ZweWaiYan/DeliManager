@@ -31,7 +31,7 @@ export const CreatePackage = async (packageValues, companyId) => {
         PackageWayProcess: 1,
         PackagePrice: parseFloat(packageValues.packagePrice),
         DeliFee: parseFloat(packageValues.deliFee),        
-        CollectMoney: parseFloat(packageValues.collectMoney),            
+        CollectMoney: 0,            
         SenderName: packageValues.senderName, 
         SenderPh: packageValues.senderPh,   
         SenderAddress: packageValues.senderAddress,    
@@ -39,9 +39,11 @@ export const CreatePackage = async (packageValues, companyId) => {
         PickupTime: packageValues.pickupTime,              
         ReceiverName: packageValues.receiverName,        
         ReceiverPh: packageValues.receiverPh,        
-        ReceiverAddress: packageValues.receiverAddress,                
+        ReceiverAddress: packageValues.receiverAddress,      
+        RouteId : 0,          
         CompanyId: companyId,                       
     };        
+    console.log("data", data);
     try {
         const response = await axios.post(`/api/Package/CreatePackage`, data);      
         if (response && response.status === 200) {

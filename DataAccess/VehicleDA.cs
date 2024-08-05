@@ -15,11 +15,11 @@ namespace DeliManager.DataAccess
         {
             BaseTB_Vehicle BaseTB_Vehicle = new BaseTB_Vehicle();
             int VehicleTotalRecord = BaseTB_Vehicle.GetCountVehicleQuery(companyId);            
-             List<string> deliveryColumn = BaseTB_Vehicle.GetVehicleColumnQuery();
+             List<string> vehicleColumn = BaseTB_Vehicle.GetVehicleColumnQuery();
             List<BaseTB_VehicleEntity> list = BaseTB_Vehicle.FetchVehicleQuery(companyId);
             SearchResultObject<BaseTB_VehicleEntity> sro = new SearchResultObject<BaseTB_VehicleEntity>
             {
-                TableColumn = deliveryColumn,
+                TableColumn = vehicleColumn,
                 TotalCount = VehicleTotalRecord,
                 Records = new List<BaseTB_VehicleEntity>()
             };
@@ -31,11 +31,12 @@ namespace DeliManager.DataAccess
                     LicensePlate = row.LicensePlate,
                     Modal = row.Modal,
                     Manufacturer = row.Manufacturer,
-                    DeliveryId = row.DeliveryId,
+                    DeliverymanId = row.DeliverymanId,
                     VehicleStatus = row.VehicleStatus,
                     Capacity = row.Capacity,
                     InsuranceExpiryDate = row.InsuranceExpiryDate,
                     FuelLevel = row.FuelLevel,
+                    RouteId = row.RouteId,
                     CompanyId = row.CompanyId,
                     CreatedBy = row.CreatedBy,
                     CreatedDate = row.CreatedDate,
@@ -142,6 +143,6 @@ namespace DeliManager.DataAccess
                 result.Message = exp.Message;
             }
             return result;
-        }
+        }     
     }
 }

@@ -21,10 +21,9 @@ import { CreateMockApiData, DeleteMockApiData, EditMockApiData } from 'src/api/M
 import { TimePicker } from '@mui/x-date-pickers';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 
-import packageWayProcess from '../utilities/packageWayProcess';
-import vehicleStatus from '../utilities/vehicleStatus';
-
-import { times } from 'lodash';
+import packageWayProcess from '../utilities/PackageWayProcess';
+import vehicleStatus from '../utilities/VehicleStatus';
+import deliverymanStatus from '../utilities/DeliverymanStatus';
 
 //Delete Modal Style
 const deleteModalStyle = {
@@ -506,18 +505,20 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                 <form onSubmit={handleSubmit}>
                     {tableTitle.slice(1).map((key) => {
                         const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
-                        return (
-                            <TextField
-                                key={key}
-                                label={key}
-                                name={key}
-                                defaultValue={textFieldRefs.current[lowerKey] || ''}
-                                inputRef={ref => textFieldRefs.current[lowerKey] = ref}
-                                fullWidth
-                                margin="normal"
-                                variant="outlined"
-                            />
-                        )
+                        if(!key.toLowerCase().includes('deliverymanstatus')){
+                            return (
+                                <TextField
+                                    key={key}
+                                    label={key}
+                                    name={key}
+                                    defaultValue={textFieldRefs.current[lowerKey] || ''}
+                                    inputRef={ref => textFieldRefs.current[lowerKey] = ref}
+                                    fullWidth
+                                    margin="normal"
+                                    variant="outlined"
+                                />
+                            )
+                        }
                     })}
                     <Button sx={{ marginTop: '30px' }} type="submit" variant="contained" color="primary">
                         Submit
@@ -700,27 +701,31 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                                                     label="PickupDate"
                                                     defaultValue={textFieldRefs.current["pickupDate"] || dayjs()}
                                                     inputRef={ref => { textFieldRefs.current["pickupDate"] = ref; }}
-                                                    renderInput={(params) => (
-                                                        <TextField
-                                                            {...params}
-                                                            fullWidth
-                                                            margin="normal"
-                                                            variant="outlined"
-                                                        />
-                                                    )}
+                                                    slots={{
+                                                        textField: (params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                fullWidth
+                                                                margin="normal"
+                                                                variant="outlined"
+                                                            />
+                                                        ),
+                                                    }}
                                                 />
                                                 <TimePicker
                                                     label="PickupTime"
                                                     defaultValue={textFieldRefs.current["pickupTime"] || dayjs()}
                                                     inputRef={ref => { textFieldRefs.current["pickupTime"] = ref; }}
-                                                    renderInput={(params) => (
-                                                        <TextField
-                                                            {...params}
-                                                            fullWidth
-                                                            margin="normal"
-                                                            variant="outlined"
-                                                        />
-                                                    )}
+                                                    slots={{
+                                                        textField: (params) => (
+                                                            <TextField
+                                                                {...params}
+                                                                fullWidth
+                                                                margin="normal"
+                                                                variant="outlined"
+                                                            />
+                                                        ),
+                                                    }}
                                                 />
                                             </Stack>
                                         </Box>
@@ -839,7 +844,7 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
             )
         }
     }
-    
+
     const getModalContent = () => {
         switch (title.toLowerCase()) {
             case "vehicleinfo table":
@@ -853,22 +858,29 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
 
     const getProcessNameById = (id) => {
         const process = packageWayProcess.find(p => p.id === id);
-        return process ? process.wayProcess : 'Unknown Process';
+        return process ? process.status : 'Unknown Process';
     };
 
-    const getVehicleStatus = (id) => {        
-        const vehiclestatus = vehicleStatus.find(p => p.id === id);        
-        return vehiclestatus ? vehiclestatus.vehiclestatus : 'Unknown Status';
+    const getVehicleStatus = (id) => {
+        const vehiclestatus = vehicleStatus.find(p => p.id === id);
+        return vehiclestatus ? vehiclestatus.status : 'Unknown Status';
     };
 
-    const getRowData = (column,row,value) => {          
+    const getDeliverymanStatus = (id) => {
+        const deliverymanstatus = deliverymanStatus.find(p => p.id === id);
+        return deliverymanstatus ? deliverymanstatus.status : 'Unknown Status';
+    };
+
+    const getRowData = (column, row, value) => {
         switch (column) {
             case "PackageWayProcess":
-                return getProcessNameById(row["packageWayProcess"])                
+                return getProcessNameById(row["packageWayProcess"])
             case "VehicleStatus":
-                return getVehicleStatus(row["vehicleStatus"])                
-            default:                
-                return value === "" || value === 0 ? <div>-</div> : value            
+                return getVehicleStatus(row["vehicleStatus"])
+            case "DeliverymanStatus":
+                return getDeliverymanStatus(row["deliverymanStatus"])
+            default:
+                return value === "" || value === 0 ? <div>-</div> : value
         }
     }
 
@@ -920,13 +932,15 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                 <Table aria-label="simple table" sx={{ whiteSpace: "nowrap", mt: 2 }}>
                     <TableHead>
                         <TableRow>
-                            {tableTitle.map((column, index) => (
-                                <TableCell key={index} style={{ textAlign: 'center' }}>
-                                    <Typography variant="subtitle2" fontWeight={600}>
-                                        {column}
-                                    </Typography>
-                                </TableCell>
-                            ))}
+                            {tableTitle.map((column, index) => {
+                                return (
+                                    <TableCell key={index} style={{ textAlign: 'center' }}>
+                                        <Typography variant="subtitle2" fontWeight={600}>
+                                            {column}
+                                        </Typography>
+                                    </TableCell>
+                                )
+                            })}
                             <TableCell style={{ textAlign: 'center' }}>
                                 <Typography variant="subtitle2" fontWeight={600}>
                                     Actions
@@ -957,7 +971,7 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                                                     :
                                                     value === "" || value === 0 ? <div>-</div> : value
                                                 } */}
-                                                {getRowData(column,row,value)}
+                                                {getRowData(column, row, value)}
                                             </TableCell>
                                         )
                                     })}

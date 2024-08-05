@@ -5,9 +5,9 @@ export const FetchVehicleList = async (companyId) => {
     var result = { Status: true, Message: "", Data: null };
     var data = {
         CompanyId: companyId
-    }        
+    }            
     try {
-        const response = await axios.post(`/api/Vehicle/FetchVehicleList`, data);        
+        const response = await axios.post(`/api/Vehicle/FetchVehicleList`, data);                
         if (response && response.status === 200) {
             result.Status = true;
             return response.data;
@@ -30,9 +30,11 @@ export const CreateVehicle = async (VehicleValues, companyId) => {
         Modal: VehicleValues.modal,
         Manufacturer: VehicleValues.manufacturer,
         VehicleStatus: 1,        
+        DeliverymanId : 0,
         Capacity: parseInt(VehicleValues.capacity),
         insuranceExpiryDate: VehicleValues.insuranceExpiryDate,
         FuelLevel: parseFloat(VehicleValues.fuelLevel),
+        RouteId : 0,
         CompanyId: companyId,
     };            
     try {
@@ -62,7 +64,7 @@ export const EditVehicle = async (id , VehicleValues, companyId) => {
         LicensePlate: VehicleValues.licensePlate,
         Modal: VehicleValues.modal,
         Manufacturer: VehicleValues.manufacturer,
-        DeliveryId : parseInt(VehicleValues.deliveryId),        
+        DeliverymanId : parseInt(VehicleValues.deliveryId),        
         VehicleStatus: 1,
         Capacity: parseInt(VehicleValues.capacity),
         insuranceExpiryDate: VehicleValues.insuranceExpiryDate,
