@@ -44,8 +44,7 @@ export const CreateRoute = async (RouteValues, companyId) => {
         CompanyId: parseInt(companyId),
     };            
     try {
-        const response = await axios.post(`/api/Route/CreateRoute`, data);      
-        console.log("response" , response);
+        const response = await axios.post(`/api/Route/CreateRoute`, data);              
         if (response && response.status === 200) {
             return response.data;
         } else {
@@ -65,8 +64,7 @@ export const CreateRoute = async (RouteValues, companyId) => {
 }
 
 export const EditRoute = async (id , RouteValues, companyId) => {    
-    var result = { Status: true, Message: "", Data: null};    
-    console.log("edit value" , RouteValues);
+    var result = { Status: true, Message: "", Data: null};        
     let data = {
         RouteId : id,
         DeliverymanName: RouteValues.deliverymanName,
@@ -86,8 +84,7 @@ export const EditRoute = async (id , RouteValues, companyId) => {
         FinishDate: RouteValues.finishDate,
         FinishTime: RouteValues.finishTime,
         CompanyId: parseInt(companyId),
-    };   
-    console.log("editRoute" , data);   
+    };       
     try {
         const response = await axios.post(`/api/Route/EditRoute`, data);      
         if (response && response.status === 200) {

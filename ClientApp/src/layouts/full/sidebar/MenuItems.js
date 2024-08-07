@@ -10,7 +10,7 @@ import { uniqueId } from 'lodash';
 const Menuitems = [
   {
     navlabel: true,
-    subheader: 'Home',
+    subheader: 'Summary',
   },
   {
     id: uniqueId(),
@@ -18,16 +18,16 @@ const Menuitems = [
     icon: IconLayoutDashboard,
     href: '/dashboard',
   },
-  {
-    navlabel: true,
-    subheader: 'Table',
-  },
-  {
-    id: uniqueId(),
-    title: 'MockAPI Table',
-    icon: IconTable,
-    href: '/mockapitable',
-  },
+  // {
+  //   navlabel: true,
+  //   subheader: 'Table',
+  // },
+  // {
+  //   id: uniqueId(),
+  //   title: 'MockAPI Table',
+  //   icon: IconTable,
+  //   href: '/mockapitable',
+  // },
   {
     navlabel: true,
     subheader: 'Delivery',

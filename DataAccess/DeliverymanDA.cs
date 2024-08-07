@@ -14,8 +14,8 @@ namespace DeliManager.DataAccess
         public SearchResultObject<BaseTB_DeliverymanEntity> FetchDeliverymanDA(int? companyId)
         {
             BaseTB_Deliveryman BaseTB_Deliveryman = new BaseTB_Deliveryman();
-            int deliverymanTotalRecord = BaseTB_Deliveryman.GetCountDeliverymanQuery(companyId);            
-             List<string> deliveryColumn = BaseTB_Deliveryman.GetDeliverymanColumnQuery();
+            int deliverymanTotalRecord = BaseTB_Deliveryman.GetCountDeliverymanQuery(companyId);
+            List<string> deliveryColumn = BaseTB_Deliveryman.GetDeliverymanColumnQuery();
             List<BaseTB_DeliverymanEntity> list = BaseTB_Deliveryman.FetchDeliverymanQuery(companyId);
             SearchResultObject<BaseTB_DeliverymanEntity> sro = new SearchResultObject<BaseTB_DeliverymanEntity>
             {
@@ -29,14 +29,14 @@ namespace DeliManager.DataAccess
                 {
                     DeliverymanId = row.DeliverymanId,
                     DeliverymanName = row.DeliverymanName,
-                    DeliverymanPh = row.DeliverymanPh,                            
+                    DeliverymanPh = row.DeliverymanPh,
                     DeliverymanAddress = row.DeliverymanAddress,
                     DeliverymanStatus = row.DeliverymanStatus,
                     DeliverymanLicenseNo = row.DeliverymanLicenseNo,
                     DeliverymanNRC = row.DeliverymanNRC,
                     DeliverymanImage = row.DeliverymanImage,
-                    DeliverymanAge = row.DeliverymanAge,          
-                    RouteId = row.RouteId,  
+                    DeliverymanAge = row.DeliverymanAge,
+                    RouteId = row.RouteId,
                     CompanyId = row.CompanyId,
                     CreatedBy = row.CreatedBy,
                     CreatedDate = row.CreatedDate,
@@ -112,8 +112,8 @@ namespace DeliManager.DataAccess
                 result.Message = exp.Message;
             }
             return result;
-        }        
-         public ResultStatus DeleteDeliverymanDA(BaseTB_DeliverymanEntity deliverymanEntityInfo)
+        }
+        public ResultStatus DeleteDeliverymanDA(BaseTB_DeliverymanEntity deliverymanEntityInfo)
         {
             ResultStatus result = new ResultStatus();
             BaseTB_Deliveryman BaseTB_Deliveryman = new BaseTB_Deliveryman();
@@ -144,5 +144,12 @@ namespace DeliManager.DataAccess
             }
             return result;
         }
+
+        public virtual int CheckDeliverymanInUse(int deliverymanId)
+        {
+            var sql = new StringBuilder();
+            sql.AppendFormat(" SELECT Count(1) FROM [Route] WHERE DeliverymanId = {0}; ", deliverymanId);
+            return (int)DataBase.ExecuteScalar(sql.ToString());
+        }        
     }
 }

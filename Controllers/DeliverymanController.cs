@@ -14,11 +14,11 @@ namespace DeliManager.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class DeliverymanController : ControllerBase
-    {   
-        [HttpPost("[action]")]        
+    {
+        [HttpPost("[action]")]
         public ActionResult<SearchResultObject<BaseTB_DeliverymanEntity>> FetchDeliverymanList(BaseTB_DeliverymanEntity deliverymanEntityInfo)
-        {            
-            DeliverymanDA DA_Deliveryman = new DeliverymanDA();           
+        {
+            DeliverymanDA DA_Deliveryman = new DeliverymanDA();
             return DA_Deliveryman.FetchDeliverymanDA(deliverymanEntityInfo.CompanyId);
         }
 
@@ -50,17 +50,17 @@ namespace DeliManager.Controllers
             }
             else
             {
-                result.Status = result.Status;
+                result.Status = false;
                 result.Message = "This user is already existed";
             }
             return result;
         }
 
-//PUT
+        //PUT
         [HttpPost("[action]")]
         public ActionResult<ResultStatus> EditDeliveryman(BaseTB_DeliverymanEntity deliverymanEntityInfo)
         {
-            ResultStatus result = new ResultStatus();            
+            ResultStatus result = new ResultStatus();
             DeliverymanDA DA_Deliveryman = new DeliverymanDA();
             //Edit Deliveryman
             result = DA_Deliveryman.EditDeliverymanDA(deliverymanEntityInfo);
@@ -77,22 +77,31 @@ namespace DeliManager.Controllers
             return result;
         }
 
-         [HttpPost("[action]")]
+        [HttpPost("[action]")]
         public ActionResult<ResultStatus> DeleteDeliveryman(BaseTB_DeliverymanEntity deliverymanEntityInfo)
         {
-            ResultStatus result = new ResultStatus();            
+            ResultStatus result = new ResultStatus();
             DeliverymanDA DA_Deliveryman = new DeliverymanDA();
-            //Delete Deliveryman
-            result = DA_Deliveryman.DeleteDeliverymanDA(deliverymanEntityInfo);
-            if (result.Status)
+            int isHas = DA_Deliveryman.CheckDeliverymanInUse((int)deliverymanEntityInfo.DeliverymanId);
+            if (isHas == 0)
             {
-                result.Status = result.Status;
-                result.Message = result.Message;
+                //Delete Deliveryman
+                result = DA_Deliveryman.DeleteDeliverymanDA(deliverymanEntityInfo);
+                if (result.Status)
+                {
+                    result.Status = result.Status;
+                    result.Message = result.Message;
+                }
+                else
+                {
+                    result.Status = result.Status;
+                    result.Message = result.Message;
+                }
             }
             else
             {
-                result.Status = result.Status;
-                result.Message = result.Message;
+                result.Status = false;
+                result.Message = "This Deliveryman is used on Route No." + deliverymanEntityInfo.RouteId;
             }
             return result;
         }

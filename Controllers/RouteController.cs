@@ -68,7 +68,7 @@ namespace DeliManager.Controllers
             }
             else
             {
-                result.Status = result.Status;
+                result.Status = false;
                 result.Message = "This Route is already existed";
             }
             return result;
@@ -151,6 +151,7 @@ namespace DeliManager.Controllers
                     result.Status = result.Status;
                     result.Message = result.Message;
                 }
+
                 result.Status = result.Status;
                 result.Message = result.Message;
             }

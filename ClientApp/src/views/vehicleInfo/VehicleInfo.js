@@ -2,10 +2,11 @@ import React, { useEffect, useReducer, useRef, useState } from "react";
 import PageContainer from "src/components/container/PageContainer";
 import DataTable from '../table/DataTable';
 import DashboardCard from 'src/components/shared/DashboardCard';
-import { FetchVehicleList , CreateVehicle , EditVehicle , DeleteVehicle } from "src/api/VehicleAPI";
+import { FetchVehicleList, CreateVehicle, EditVehicle, DeleteVehicle } from "src/api/VehicleAPI";
 
 import { connect } from 'react-redux';
 import * as actions from './../../actions/authActions';
+import stringValue from "../utilities/StringValue";
 
 const VehicleInfo = ({ auth }) => {
 
@@ -14,15 +15,16 @@ const VehicleInfo = ({ auth }) => {
     const [dataList, setDataList] = useState([]);
     const [titleList, setTitleList] = useState([]);
     const [totalCount, setTotalCount] = useState(0);
+    const [apiResponse, setAPIResponse] = useState();
 
-    const fetchVehicle = async () => {        
+    const fetchVehicle = async () => {
         const res = await FetchVehicleList(auth.companyId);
 
         console.log("fetch VehicleInfo");
         setTitleList(res.tableColumn);
         setTotalCount(res.totalCount);
         if (res.totalCount !== 0) {
-            setDataList(res.records);                     
+            setDataList(res.records);
         }
     }
 
@@ -30,18 +32,21 @@ const VehicleInfo = ({ auth }) => {
         fetchVehicle();
     }, []);
 
-    const handleCreate = async (data, companyId) => {        
-        await CreateVehicle(data, companyId);                
+    const handleCreate = async (data, companyId) => {
+        const res = await CreateVehicle(data, companyId);
+        setAPIResponse(res);
         fetchVehicle();
     };
 
-    const handleEdit = async (id, data, companyId) => {            
-        await EditVehicle(id , data, companyId);
+    const handleEdit = async (id, data, companyId) => {
+        const res = await EditVehicle(id, data, companyId);
+        setAPIResponse(res);
         fetchVehicle();
     };
 
-    const handleDelete = async (id, companyId) => {        
-        await DeleteVehicle(id, companyId);
+    const handleDelete = async (id, companyId, routeId) => {
+        const res = await DeleteVehicle(id, companyId, routeId);
+        setAPIResponse(res);
         fetchVehicle();
     };
 
@@ -49,7 +54,7 @@ const VehicleInfo = ({ auth }) => {
         <PageContainer title="VehicleInfo Table" description="This is VehicleInfo Table">
             <DashboardCard>
                 <DataTable
-                    title={"VehicleInfo Table"}
+                    title={stringValue[1]}
                     titleButton={"New Vehicle"}
                     tableTitle={titleList}
                     tableData={dataList}
@@ -57,7 +62,9 @@ const VehicleInfo = ({ auth }) => {
                     companyId={auth.companyId}
                     onCreate={handleCreate}
                     onEdit={handleEdit}
-                    onDelete={handleDelete} />
+                    onDelete={handleDelete}
+                    apiResponse={apiResponse}
+                />
             </DashboardCard>
         </PageContainer>
     );

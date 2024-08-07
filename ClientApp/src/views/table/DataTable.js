@@ -24,6 +24,9 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import packageWayProcess from '../utilities/PackageWayProcess';
 import vehicleStatus from '../utilities/VehicleStatus';
 import deliverymanStatus from '../utilities/DeliverymanStatus';
+import { ruRU } from '@mui/x-date-pickers/locales';
+import stringValue from '../utilities/StringValue';
+import { ReduceCapacity } from '@mui/icons-material';
 
 //Delete Modal Style
 const deleteModalStyle = {
@@ -258,9 +261,10 @@ const createEditModalStyle = {
 // };
 
 //FOR MSSQL Database
-const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, companyId, onCreate, onEdit, onDelete }) => {
+const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, companyId, onCreate, onEdit, onDelete, apiResponse = null }) => {
 
     console.log("DataTable Render");
+
     dayjs.extend(customParseFormat);
 
     const [modalState, setModalState] = useState({
@@ -275,12 +279,22 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
         severity: 'success'
     });
 
+    const [errors, setErrors] = useState({});
+
     const textFieldRefs = useRef({});
+    const routeId = useRef({});
 
     const openModal = (type, data = {}, rowIndex = null) => {
+
+        setErrors({});
         setModalState({ open: true, type, rowIndex });
         const isEmptyData = Object.keys(data).length === 0;
-        if (!isEmptyData) {
+
+        if (type === 'delete') {
+            routeId.current = data.routeId;
+        }
+
+        if (!isEmptyData && type !== 'delete') {
             tableTitle.slice(1).forEach((key) => {
                 textFieldRefs.current[key.charAt(0).toLowerCase() + key.slice(1)] = data[key.charAt(0).toLowerCase() + key.slice(1)] || '';
             });
@@ -293,51 +307,261 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
 
     const handleEdit = (rowData, rowIndex) => openModal('edit', rowData, rowIndex);
 
-    const handleDelete = (rowIndex) => openModal('delete', {}, rowIndex);
+    const handleDelete = (rowData, rowIndex) => openModal('delete', rowData, rowIndex);
+
+    const validate = () => {
+        const newErrors = {};
+
+        const deliverymanValidationRules = {
+            deliverymanName: [
+                {
+                    test: value => value.trim() === "",
+                    message: "Name must not be empty"
+                }
+            ],
+            deliverymanPh: [
+                {
+                    test: value => value.trim() === "",
+                    message: "Phone number not be empty"
+                },
+                {
+                    test: value => value.trim() !== "" && !/^\d+$/.test(value),
+                    message: "Phone number must be a number"
+                }
+            ],
+            deliverymanAddress: [
+                {
+                    test: value => value.trim() === "",
+                    message: "Address not be empty"
+                },
+            ],
+            deliverymanLicenseNo: [
+                {
+                    test: value => value.trim() === "",
+                    message: "LicenseNo not be empty"
+                },
+            ],
+            deliverymanNRC: [
+                {
+                    test: value => value.trim() === "",
+                    message: "NRC not be empty"
+                },
+            ],
+            deliverymanAge: [
+                {
+                    test: value => value.trim() === "",
+                    message: "Age not be empty"
+                },
+                {
+                    test: value => value.trim() !== "" && !/^\d+$/.test(value),
+                    message: "Age must be a number"
+                }
+            ],
+        };
+
+        const vehicleValidationRules = {
+            licensePlate: [
+                {
+                    test: value => value.trim() === "",
+                    message: "LicensePlate must not be empty"
+                }
+            ],
+            modal: [
+                {
+                    test: value => value.trim() === "",
+                    message: "Modal must not be empty"
+                }
+            ],
+            manufacturer: [
+                {
+                    test: value => value.trim() === "",
+                    message: "Manufacturer must not be empty"
+                }
+            ],
+            capacity: [
+                {
+                    test: value => value.trim() === "",
+                    message: "Capacity must not be empty"
+                },
+                {
+                    test: value => value.trim() !== "" && !/^\d+$/.test(value),
+                    message: "Capacity must be a number"
+                }
+            ],
+            fuelLevel: [
+                {
+                    test: value => value.trim() === "",
+                    message: "FuelLevel must not be empty"
+                },
+                {
+                    test: value => value.trim() !== "" && !/^\d+$/.test(value),
+                    message: "FuelLevel must be a number"
+                }
+            ],
+        };
+
+        const packageValidationRules = {
+            packageTitle: [
+                {
+                    test: value => value.trim() === "",
+                    message: "Title must not be empty"
+                },
+            ],
+            packageQty: [
+                {
+                    test: value => value.trim() === "",
+                    message: "PackageQty must not be empty"
+                },
+                {
+                    test: value => value.trim() !== "" && !/^\d+$/.test(value),
+                    message: "PackageQty must be a number"
+                }
+            ],
+            packagePrice: [
+                {
+                    test: value => value.trim() === "",
+                    message: "Price must not be empty"
+                },
+                {
+                    test: value => value.trim() !== "" && !/^\d+$/.test(value),
+                    message: "Price must be a number"
+                }
+            ],
+            deliFee: [
+                {
+                    test: value => value.trim() === "",
+                    message: "DeliFee must not be empty"
+                },
+                {
+                    test: value => value.trim() !== "" && !/^\d+$/.test(value),
+                    message: "DeliFee must be a number"
+                }
+            ],
+            collectMoney: [
+                {
+                    test: value => value.trim() !== "" && !/^\d+$/.test(value),
+                    message: "CollectMoney must be a number"
+                }
+            ],
+            senderName: [
+                {
+                    test: value => value.trim() === "",
+                    message: "SenderName must not be empty"
+                },
+            ],
+            senderPh: [
+                {
+                    test: value => value.trim() === "",
+                    message: "SenderPhone must not be empty"
+                },
+                {
+                    test: value => value.trim() !== "" && !/^\d+$/.test(value),
+                    message: "SenderPhone must be a number"
+                }
+            ],
+            senderAddress: [
+                {
+                    test: value => value.trim() === "",
+                    message: "SenderAddress must not be empty"
+                },
+            ],
+            receiverName: [
+                {
+                    test: value => value.trim() === "",
+                    message: "ReceiverName must not be empty"
+                },
+            ],
+            receiverPh: [
+                {
+                    test: value => value.trim() === "",
+                    message: "ReceiverPhone must not be empty"
+                },
+                {
+                    test: value => value.trim() !== "" && !/^\d+$/.test(value),
+                    message: "ReceiverPhone must be a number"
+                }
+            ],
+            receiverAddress: [
+                {
+                    test: value => value.trim() === "",
+                    message: "ReceiverAddress must not be empty"
+                },
+            ],
+        };
+
+        let validationRules;
+
+        switch (title.id) {
+            case 1:
+                validationRules = deliverymanValidationRules;
+                break;
+            case 2:
+                validationRules = vehicleValidationRules;
+                break;
+            case 3:
+                validationRules = packageValidationRules;
+                break;
+            default:
+                break;
+        }
+
+
+
+        Object.keys(validationRules).forEach((field) => {
+
+            const fieldValue = textFieldRefs.current[field]?.value || '';
+            newErrors[field] = [];
+
+            validationRules[field].forEach(rule => {
+
+                if (rule.test(fieldValue)) {
+                    newErrors[field].push(rule.message);
+                }
+            })
+
+            if (newErrors[field].length === 0) {
+                delete newErrors[field];
+            }
+        })
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0; // Return true if no errors
+    }
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
         const { type, rowIndex } = modalState;
         const data = {};
 
-        let operation;
-        let successMsg;
-        let errorMsg;
+        if (type === 'delete') {
 
-        if (type !== 'delete') {
+            let operation = onDelete(getClickedRowId(rowIndex), companyId, routeId.current);
+            operation.then(() => { setSnackBarState({ open: true }) });
+
+            closeModal();
+        }
+
+        if (validate() && type !== 'delete') {
+
             Object.keys(textFieldRefs.current).forEach((key) => {
                 data[key] = textFieldRefs.current[key].value;
             });
+
+            let operation;
+
+            switch (type) {
+                case 'create':
+                    operation = onCreate(data, companyId);
+                    break;
+                case 'edit':
+                    operation = onEdit(getClickedRowId(rowIndex), data, companyId);
+                    break;
+            }
+
+            operation.then(() => { setSnackBarState({ open: true }) });
+            closeModal();
         }
-
-        switch (type) {
-            case 'create':
-                operation = onCreate(data, companyId);
-                successMsg = 'User created successfully';
-                errorMsg = 'Failed to create user.';
-                break;
-            case 'edit':
-                operation = onEdit(getClickedRowId(rowIndex), data, companyId);
-                successMsg = 'User updated successfully';
-                errorMsg = 'Failed to update user.';
-                break;
-            case 'delete':
-                operation = onDelete(getClickedRowId(rowIndex), companyId);
-                successMsg = 'User deleted successfully';
-                errorMsg = 'Failed to delete user.';
-                break;
-        }
-
-        operation.then(
-            () => {
-                setSnackBarState({ open: true, message: successMsg, severity: 'success' });
-            },
-            () => {
-                setSnackBarState({ open: true, message: errorMsg, severity: 'error' });
-            },
-        )
-
-        closeModal();
     };
 
     const handleCloseSnackbar = () => {
@@ -350,132 +574,6 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
         return idKey ? row[idKey] : null;
     };
 
-    // const modalContent = () => {
-    //     const { type } = modalState;
-
-    //     if (type === 'delete') {
-    //         return (
-    //             <Box sx={deleteModalStyle}>
-    //                 <form onSubmit={handleSubmit}>
-    //                     <Typography sx={{ marginBottom: '30px', marginLeft: '25px' }} variant="h6" component="h2">
-    //                         Are you sure to delete this user?
-    //                     </Typography>
-    //                     <Button sx={{ marginTop: '10px', marginRight: '120px' }} type="submit" variant="contained" color="error">
-    //                         Submit
-    //                     </Button>
-    //                     <Button sx={{ marginTop: '10px' }} onClick={closeModal} type="button" variant="contained" color="primary">
-    //                         Cancel
-    //                     </Button>
-    //                 </form>
-    //             </Box>
-    //         );
-    //     }
-
-    //     return (
-    //         <Box sx={createEditModalStyle}>
-    //             <Typography sx={{ marginBottom: '20px' }} variant="h6">
-    //                 {type === 'create' ? 'Create new user' : 'Edit existing user'}
-    //             </Typography>
-    //             <form onSubmit={handleSubmit}>
-    //                 {tableTitle.slice(1).map((key) => {
-    //                     const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
-
-    //                     if (key.toLowerCase().includes('pickupdate')) {
-    //                         return (
-    //                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-    //                                 <Box sx={{ marginTop: '10px' }}>
-    //                                     <Stack direction="row" spacing={2}>
-    //                                         <DatePicker
-    //                                             label="PickupDate"
-    //                                             defaultValue={textFieldRefs.current["pickupDate"] || dayjs()}
-    //                                             inputRef={ref => { textFieldRefs.current["pickupDate"] = ref; }}
-    //                                             renderInput={(params) => (
-    //                                                 <TextField
-    //                                                     {...params}
-    //                                                     fullWidth
-    //                                                     margin="normal"
-    //                                                     variant="outlined"
-    //                                                 />
-    //                                             )}
-    //                                         />
-    //                                         <TimePicker
-    //                                             label="PickupTime"
-    //                                             defaultValue={textFieldRefs.current["pickupTime"] || dayjs()}
-    //                                             inputRef={ref => { textFieldRefs.current["pickupTime"] = ref; }}
-    //                                             renderInput={(params) => (
-    //                                                 <TextField
-    //                                                     {...params}
-    //                                                     fullWidth
-    //                                                     margin="normal"
-    //                                                     variant="outlined"
-    //                                                 />
-    //                                             )}
-    //                                         />
-    //                                     </Stack>
-    //                                 </Box>
-    //                             </LocalizationProvider>
-    //                         );
-    //                     }
-    //                     if (type !== 'create' && key.toLowerCase().includes('receiveddate')) {
-    //                         return (
-    //                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-    //                                 <Box sx={{ marginTop: '15px' }}>
-    //                                     <Stack direction="row" spacing={2}>
-    //                                         <DatePicker
-    //                                             label="ReceivedDate"
-    //                                             defaultValue={textFieldRefs.current["receivedDate"] || dayjs()}
-    //                                             inputRef={ref => { textFieldRefs.current["receivedDate"] = ref; }}
-    //                                             renderInput={(params) => (
-    //                                                 <TextField
-    //                                                     {...params}
-    //                                                     fullWidth
-    //                                                     margin="normal"
-    //                                                     variant="outlined"
-    //                                                 />
-    //                                             )}
-    //                                         />
-    //                                         <TimePicker
-    //                                             label="ReceivedTime"
-    //                                             defaultValue={textFieldRefs.current["receivedTime"] || dayjs()}
-    //                                             inputRef={ref => { textFieldRefs.current["receivedTime"] = ref; }}
-    //                                             renderInput={(params) => (
-    //                                                 <TextField
-    //                                                     {...params}
-    //                                                     fullWidth
-    //                                                     margin="normal"
-    //                                                     variant="outlined"
-    //                                                 />
-    //                                             )}
-    //                                         />
-    //                                     </Stack>
-    //                                 </Box>
-    //                             </LocalizationProvider>
-    //                         );
-    //                     }
-    //                     if (!key.toLowerCase().includes('time') && !key.toLowerCase().includes('date') && !key.toLowerCase().includes('packagewayprocess') && !(key.toLowerCase().includes('packagewayprocess') && type !== 'create')) {
-    //                         return (
-    //                             <TextField
-    //                                 key={key}
-    //                                 label={key}
-    //                                 name={key}
-    //                                 defaultValue={textFieldRefs.current[lowerKey] || ''}
-    //                                 inputRef={ref => textFieldRefs.current[lowerKey] = ref}
-    //                                 fullWidth
-    //                                 margin="normal"
-    //                                 variant="outlined"
-    //                             />
-    //                         )
-    //                     }
-
-    //                 })}
-    //                 <Button sx={{ marginTop: '30px' }} type="submit" variant="contained" color="primary">
-    //                     Submit
-    //                 </Button>
-    //             </form>
-    //         </Box>
-    //     );
-    // };
-
     const modalContent = () => {
         const { type } = modalState;
 
@@ -483,8 +581,8 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
             return (
                 <Box sx={deleteModalStyle}>
                     <form onSubmit={handleSubmit}>
-                        <Typography sx={{ marginBottom: '30px', marginLeft: '25px' }} variant="h6" component="h2">
-                            Are you sure to delete this user?
+                        <Typography sx={{ marginBottom: '30px' }} variant="h6" component="h6">
+                            Are you sure to delete deliveryman?
                         </Typography>
                         <Button sx={{ marginTop: '10px', marginRight: '120px' }} type="submit" variant="contained" color="error">
                             Submit
@@ -500,12 +598,12 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
         return (
             <Box sx={createEditModalStyle}>
                 <Typography sx={{ marginBottom: '20px' }} variant="h6">
-                    {type === 'create' ? 'Create new user' : 'Edit existing user'}
+                    {type === 'create' ? 'Create new deliveryman' : 'Edit existing deliveryman'}
                 </Typography>
                 <form onSubmit={handleSubmit}>
                     {tableTitle.slice(1).map((key) => {
                         const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
-                        if(!key.toLowerCase().includes('deliverymanstatus')){
+                        if (!key.toLowerCase().includes('deliverymanstatus') && !key.toLowerCase().includes('routeid') && !key.toLowerCase().includes('deliverymanimage')) {
                             return (
                                 <TextField
                                     key={key}
@@ -516,6 +614,8 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                                     fullWidth
                                     margin="normal"
                                     variant="outlined"
+                                    error={type !== 'delete' ? !!errors[lowerKey] : false}
+                                    helperText={type != 'delete' ? errors[lowerKey] : ''}
                                 />
                             )
                         }
@@ -535,7 +635,7 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
             return (
                 <Box sx={deleteModalStyle}>
                     <form onSubmit={handleSubmit}>
-                        <Typography sx={{ marginBottom: '30px', marginLeft: '25px' }} variant="h6" component="h2">
+                        <Typography sx={{ marginBottom: '30px', marginLeft: '10px' }} variant="h6" component="h6">
                             Are you sure to delete this vehicle?
                         </Typography>
                         <Button sx={{ marginTop: '10px', marginRight: '120px' }} type="submit" variant="contained" color="error">
@@ -580,7 +680,7 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                                 );
                             }
 
-                            if (!key.toLowerCase().includes('vehiclestatus')) {
+                            if (!key.toLowerCase().includes('vehiclestatus') && !key.toLowerCase().includes('routeid') && !key.toLowerCase().includes('deliverymanid')) {
                                 return (
                                     <TextField
                                         key={key}
@@ -591,6 +691,8 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                                         fullWidth
                                         margin="normal"
                                         variant="outlined"
+                                        error={type !== 'delete' ? !!errors[lowerKey] : false}
+                                        helperText={type != 'delete' ? errors[lowerKey] : ''}
                                     />
                                 )
                             }
@@ -638,7 +740,7 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                                 );
                             }
 
-                            if (!key.toLowerCase().includes('vehiclestatus')) {
+                            if (!key.toLowerCase().includes('vehiclestatus') && !key.toLowerCase().includes('routeid') && !key.toLowerCase().includes('deliverymanid')) {
                                 return (
                                     <TextField
                                         key={key}
@@ -649,6 +751,8 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                                         fullWidth
                                         margin="normal"
                                         variant="outlined"
+                                        error={type !== 'delete' ? !!errors[lowerKey] : false}
+                                        helperText={type != 'delete' ? errors[lowerKey] : ''}
                                     />
                                 )
                             }
@@ -669,7 +773,7 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
             return (
                 <Box sx={deleteModalStyle}>
                     <form onSubmit={handleSubmit}>
-                        <Typography sx={{ marginBottom: '30px', marginLeft: '25px' }} variant="h6" component="h2">
+                        <Typography sx={{ marginBottom: '30px' }} variant="h6" component="h6">
                             Are you sure to delete this package?
                         </Typography>
                         <Button sx={{ marginTop: '10px', marginRight: '120px' }} type="submit" variant="contained" color="error">
@@ -736,7 +840,8 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                             if (!key.toLowerCase().includes('receiveddate') &&
                                 !key.toLowerCase().includes('time') &&
                                 !key.toLowerCase().includes('deliverymanid') &&
-                                !key.toLowerCase().includes('packagewayprocess')
+                                !key.toLowerCase().includes('packagewayprocess') &&
+                                !key.toLowerCase().includes('routeid')
                             ) {
                                 return (
                                     <TextField
@@ -748,6 +853,8 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                                         fullWidth
                                         margin="normal"
                                         variant="outlined"
+                                        error={type !== 'delete' ? !!errors[lowerKey] : false}
+                                        helperText={type != 'delete' ? errors[lowerKey] : ''}
                                     />
                                 )
                             }
@@ -820,7 +927,8 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                             if (!key.toLowerCase().includes('receiveddate') &&
                                 !key.toLowerCase().includes('time') &&
                                 !key.toLowerCase().includes('deliverymanid') &&
-                                !key.toLowerCase().includes('packagewayprocess')
+                                !key.toLowerCase().includes('packagewayprocess') &&
+                                !key.toLowerCase().includes('routeid')
                             ) {
                                 return (
                                     <TextField
@@ -832,6 +940,8 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                                         fullWidth
                                         margin="normal"
                                         variant="outlined"
+                                        error={type !== 'delete' ? !!errors[lowerKey] : false}
+                                        helperText={type != 'delete' ? errors[lowerKey] : ''}
                                     />
                                 )
                             }
@@ -846,10 +956,10 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
     }
 
     const getModalContent = () => {
-        switch (title.toLowerCase()) {
-            case "vehicleinfo table":
+        switch (title.id) {
+            case 2:
                 return vehicleModalContent();
-            case "packageinfo table":
+            case 3:
                 return packageModalContent();
             default:
                 return modalContent();
@@ -906,11 +1016,11 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                 sx={{ maxWidth: 600 }}
             >
-                <Alert onClose={handleCloseSnackbar} severity={snackBarState.severity} sx={{ width: '100%' }}>
-                    {snackBarState.message}
+                <Alert onClose={handleCloseSnackbar} severity={apiResponse != null ? apiResponse.status ? 'success' : 'error' : null} sx={{ width: '100%' }}>
+                    {apiResponse != null ? apiResponse.message : null}
                 </Alert>
             </Snackbar>
-            {title && (
+            {title.value && (
                 <CardContent sx={{ p: "3px" }}>
                     <Stack
                         direction="row"
@@ -920,7 +1030,7 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                         mb={3}
                     >
                         <Box>
-                            <Typography variant="h5">{title}</Typography>
+                            <Typography variant="h5">{title.value}</Typography>
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
                             <Button onClick={() => openModal('create')} variant="contained">{titleButton}</Button>
@@ -933,13 +1043,15 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                     <TableHead>
                         <TableRow>
                             {tableTitle.map((column, index) => {
-                                return (
-                                    <TableCell key={index} style={{ textAlign: 'center' }}>
-                                        <Typography variant="subtitle2" fontWeight={600}>
-                                            {column}
-                                        </Typography>
-                                    </TableCell>
-                                )
+                                if (column != "RouteId" && column != "DeliverymanImage") {
+                                    return (
+                                        <TableCell key={index} style={{ textAlign: 'center' }}>
+                                            <Typography variant="subtitle2" fontWeight={600}>
+                                                {column}
+                                            </Typography>
+                                        </TableCell>
+                                    )
+                                }
                             })}
                             <TableCell style={{ textAlign: 'center' }}>
                                 <Typography variant="subtitle2" fontWeight={600}>
@@ -963,22 +1075,19 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                             {tableData.map((row, rowIndex) => (
                                 <TableRow key={rowIndex}>
                                     {tableTitle.map((column, colIndex) => {
-                                        const value = row[column.charAt(0).toLowerCase() + column.slice(1)]
-                                        return (
-                                            < TableCell key={colIndex} style={{ textAlign: 'center' }}>
-                                                {/* {column === "PackageWayProcess" ?
-                                                    getProcessNameById(row["packageWayProcess"])
-                                                    :
-                                                    value === "" || value === 0 ? <div>-</div> : value
-                                                } */}
-                                                {getRowData(column, row, value)}
-                                            </TableCell>
-                                        )
+                                        if (column != "RouteId" && column != "DeliverymanImage") {
+                                            const value = row[column.charAt(0).toLowerCase() + column.slice(1)]
+                                            return (
+                                                < TableCell key={colIndex} style={{ textAlign: 'center' }}>
+                                                    {getRowData(column, row, value)}
+                                                </TableCell>
+                                            )
+                                        }
                                     })}
                                     <TableCell>
                                         <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                            <Button sx={{ marginRight: 1 }} onClick={() => handleEdit(row, rowIndex)} variant="outlined" color="secondary">Edit</Button>
-                                            <Button style={{ justifyContent: 'center' }} variant="outlined" onClick={() => handleDelete(rowIndex)} color="error">Delete</Button>
+                                            <Button disabled={row.routeId != 0 ? true : false} sx={{ marginRight: 1 }} onClick={() => handleEdit(row, rowIndex)} variant="outlined" color="secondary">Edit</Button>
+                                            <Button disabled={row.routeId != 0 ? true : false} style={{ justifyContent: 'center' }} variant="outlined" onClick={() => handleDelete(row, rowIndex)} color="error">Delete</Button>
                                         </div>
                                     </TableCell>
                                 </TableRow>

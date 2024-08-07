@@ -1,29 +1,29 @@
 import axios from "axios";
 
 export const FetchDeliverymanList = async (companyId) => {
-    var result = { Status: true, Message: "", Data: null };
+    var result = { status: true, message: "", data: null };
     var data = {
         CompanyId: companyId
     }        
     try {
         const response = await axios.post(`/api/Deliveryman/FetchDeliverymanList`, data);        
         if (response && response.status === 200) {
-            result.Status = true;
+            result.status = true;
             return response.data;
         } else {
-            result.Status = false;
-            result.Message = "Something went wrong";
+            result.status = false;
+            result.message = "Something went wrong";
             return result;
         }
     } catch (error) {
-        result.Status = false;
-        result.Message = error.message;
+        result.status = false;
+        result.message = error.message;
         return result;
     }
 };
 
 export const CreateDeliveryman = async (deliverymanValues, companyId) => {
-    var result = { Status: true, Message: "", Data: null};        
+    var result = { status: true, message: "", data: null};        
     let data = {
         DeliverymanName: deliverymanValues.deliverymanName,
         DeliverymanPh: deliverymanValues.deliverymanPh,        
@@ -37,28 +37,27 @@ export const CreateDeliveryman = async (deliverymanValues, companyId) => {
         CompanyId: companyId,
     };         
     try {
-        const response = await axios.post(`/api/Deliveryman/CreateDeliveryman`, data);    
-        console.log("respnose" , response);  
+        const response = await axios.post(`/api/Deliveryman/CreateDeliveryman`, data);            
         if (response && response.status === 200) {
             return response.data;
         } else {
-            result.Status = false;
-            result.Message = "Something went wrong";
+            result.status = false;
+            result.message = "Something went wrong";
             return result;
         }
     } catch (error) {
         if (error.response.status === 401) {
             return error.response.status;
         } else {
-            result.Status = false;
-            result.Message = error.Message;
+            result.status = false;
+            result.message = error.Message;
             return result;
         }
     }
 }
 
 export const EditDeliveryman = async (id , deliverymanValues, companyId) => {    
-    var result = { Status: true, Message: "", Data: null};    
+    var result = { status: true, message: "", data: null};    
     let data = {
         DeliverymanId: id,
         DeliverymanName: deliverymanValues.deliverymanName,
@@ -76,42 +75,43 @@ export const EditDeliveryman = async (id , deliverymanValues, companyId) => {
         if (response && response.status === 200) {
             return response.data;
         } else {
-            result.Status = false;
-            result.Message = "Something went wrong";
+            result.status = false;
+            result.message = "Something went wrong";
             return result;
         }
     } catch (error) {
         if (error.response.status === 401) {
             return error.response.status;
         } else {
-            result.Status = false;
-            result.Message = error.Message;
+            result.status = false;
+            result.message = error.Message;
             return result;
         }
     }
 }
 
-export const DeleteDeliveryman = async (deliverymanId, companyId) => {
-    var result = { Status: true, Message: "", Data: null};
+export const DeleteDeliveryman = async (deliverymanId, companyId, routeId) => {
+    var result = { status: true, message: "", data: null};    
     let data = {
+        RouteId: routeId,
         DeliverymanId: deliverymanId,    
         CompanyId: companyId,
-    };    
+    };        
     try {
-        const response = await axios.post(`/api/Deliveryman/DeleteDeliveryman`, data);
-        if (response && response.status === 200) {
+        const response = await axios.post(`/api/Deliveryman/DeleteDeliveryman`, data);            
+        if (response.data.status && response.status === 200) {
             return response.data;
         } else {
-            result.Status = false;
-            result.Message = "Something went wrong";
+            result.status = false;
+            result.message = response.data.message;
             return result;
         }
     } catch (error) {
         if (error.response.status === 401) {
             return error.response.status;
         } else {
-            result.Status = false;
-            result.Message = error.Message;
+            result.status = false;
+            result.message = error.Message;
             return result;
         }
     }

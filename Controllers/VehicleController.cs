@@ -14,11 +14,11 @@ namespace DeliManager.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class VehicleController : ControllerBase
-    {   
-        [HttpPost("[action]")]        
+    {
+        [HttpPost("[action]")]
         public ActionResult<SearchResultObject<BaseTB_VehicleEntity>> FetchVehicleList(BaseTB_VehicleEntity VehicleEntityInfo)
-        {            
-            VehicleDA DA_Vehicle = new VehicleDA();           
+        {
+            VehicleDA DA_Vehicle = new VehicleDA();
             return DA_Vehicle.FetchVehicleDA(VehicleEntityInfo.CompanyId);
         }
 
@@ -50,17 +50,17 @@ namespace DeliManager.Controllers
             }
             else
             {
-                result.Status = result.Status;
-                result.Message = "This user is already existed";
+                result.Status = false;
+                result.Message = "This vehicle is already existed";
             }
             return result;
         }
 
-//PUT
+        //PUT
         [HttpPost("[action]")]
         public ActionResult<ResultStatus> EditVehicle(BaseTB_VehicleEntity VehicleEntityInfo)
         {
-            ResultStatus result = new ResultStatus();            
+            ResultStatus result = new ResultStatus();
             VehicleDA DA_Vehicle = new VehicleDA();
             //Edit Vehicle
             result = DA_Vehicle.EditVehicleDA(VehicleEntityInfo);
@@ -77,22 +77,31 @@ namespace DeliManager.Controllers
             return result;
         }
 
-         [HttpPost("[action]")]
+        [HttpPost("[action]")]
         public ActionResult<ResultStatus> DeleteVehicle(BaseTB_VehicleEntity VehicleEntityInfo)
         {
-            ResultStatus result = new ResultStatus();            
+            ResultStatus result = new ResultStatus();
             VehicleDA DA_Vehicle = new VehicleDA();
-            //Delete Vehicle
-            result = DA_Vehicle.DeleteVehicleDA(VehicleEntityInfo);
-            if (result.Status)
+            int isHas = DA_Vehicle.CheckVehicleInUse((int)VehicleEntityInfo.VehicleId);
+            if (isHas == 0)
             {
-                result.Status = result.Status;
-                result.Message = result.Message;
+                //Delete Vehicle
+                result = DA_Vehicle.DeleteVehicleDA(VehicleEntityInfo);
+                if (result.Status)
+                {
+                    result.Status = result.Status;
+                    result.Message = result.Message;
+                }
+                else
+                {
+                    result.Status = result.Status;
+                    result.Message = result.Message;
+                }
             }
             else
-            {
-                result.Status = result.Status;
-                result.Message = result.Message;
+             {
+                result.Status = false;
+                result.Message = "This Vehicle is used on Route No." + VehicleEntityInfo.RouteId;
             }
             return result;
         }

@@ -14,11 +14,11 @@ namespace DeliManager.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class PackageController : ControllerBase
-    {   
-        [HttpPost("[action]")]        
+    {
+        [HttpPost("[action]")]
         public ActionResult<SearchResultObject<BaseTB_PackageEntity>> FetchPackageList(BaseTB_PackageEntity packageEntityInfo)
-        {            
-            PackageDA DA_Package = new PackageDA();           
+        {
+            PackageDA DA_Package = new PackageDA();
             return DA_Package.FetchPackageDA(packageEntityInfo.CompanyId);
         }
 
@@ -52,17 +52,17 @@ namespace DeliManager.Controllers
             }
             else
             {
-                result.Status = result.Status;
-                result.Message = "This user is already existed";
+                result.Status = false;
+                result.Message = "This package is already existed";
             }
             return result;
         }
 
-//PUT
+        //PUT
         [HttpPost("[action]")]
         public ActionResult<ResultStatus> EditPackage(BaseTB_PackageEntity packageEntityInfo)
         {
-            ResultStatus result = new ResultStatus();            
+            ResultStatus result = new ResultStatus();
             PackageDA DA_Package = new PackageDA();
             //Edit Package
             result = DA_Package.EditPackageDA(packageEntityInfo);
@@ -79,24 +79,33 @@ namespace DeliManager.Controllers
             return result;
         }
 
-         [HttpPost("[action]")]
+        [HttpPost("[action]")]
         public ActionResult<ResultStatus> DeletePackage(BaseTB_PackageEntity packageEntity)
         {
-            ResultStatus result = new ResultStatus();            
+            ResultStatus result = new ResultStatus();
             PackageDA DA_Package = new PackageDA();
-            //Delete Package
-            result = DA_Package.DeletePackageDA(packageEntity);
-            if (result.Status)
+            int isHas = DA_Package.CheckPackageInUse((int)packageEntity.PackageId);
+            if (isHas == 0)
             {
-                result.Status = result.Status;
-                result.Message = result.Message;
+                //Delete Package
+                result = DA_Package.DeletePackageDA(packageEntity);
+                if (result.Status)
+                {
+                    result.Status = result.Status;
+                    result.Message = result.Message;
+                }
+                else
+                {
+                    result.Status = result.Status;
+                    result.Message = result.Message;
+                }
             }
             else
             {
-                result.Status = result.Status;
-                result.Message = result.Message;
+                result.Status = false;
+                result.Message = "This Package is used on Route No." + packageEntity.RouteId;
             }
             return result;
-        }     
+        }
     }
 }

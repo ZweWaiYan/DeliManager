@@ -144,5 +144,12 @@ namespace DeliManager.DataAccess
             }
             return result;
         }     
+
+         public virtual int CheckVehicleInUse(int vehicleId)
+        {
+            var sql = new StringBuilder();
+            sql.AppendFormat(" SELECT Count(1) FROM [Route] WHERE VehicleId = {0}; ", vehicleId);
+            return (int)DataBase.ExecuteScalar(sql.ToString());
+        }   
     }
 }

@@ -163,7 +163,7 @@ namespace DeliManager.Models.Base
             }
             if (!srcClass.IsDeliverymanStatusNull())
             {
-                setList.Add("Status = @Status");
+                setList.Add("DeliverymanStatus = @DeliverymanStatus");
             }
             if (!srcClass.IsDeliverymanLicenseNoNull())
             {

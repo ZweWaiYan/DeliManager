@@ -153,5 +153,12 @@ namespace DeliManager.DataAccess
             }
             return result;
         }
+
+         public virtual int CheckPackageInUse(int packageId)
+        {
+            var sql = new StringBuilder();
+            sql.AppendFormat(" SELECT Count(1) FROM [Route] WHERE PackageId = {0}; ", packageId);
+            return (int)DataBase.ExecuteScalar(sql.ToString());
+        }   
     }
 }

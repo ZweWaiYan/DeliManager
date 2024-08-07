@@ -2,29 +2,29 @@ import { Modal } from "@mui/material";
 import axios from "axios";
 
 export const FetchVehicleList = async (companyId) => {
-    var result = { Status: true, Message: "", Data: null };
+    var result = { status: true, message: "", data: null };
     var data = {
         CompanyId: companyId
     }            
     try {
         const response = await axios.post(`/api/Vehicle/FetchVehicleList`, data);                
         if (response && response.status === 200) {
-            result.Status = true;
+            result.status = true;
             return response.data;
         } else {
-            result.Status = false;
-            result.Message = "Something went wrong";
+            result.status = false;
+            result.message = "Something went wrong";
             return result;
         }
     } catch (error) {
-        result.Status = false;
-        result.Message = error.message;
+        result.status = false;
+        result.message = error.message;
         return result;
     }
 };
 
 export const CreateVehicle = async (VehicleValues, companyId) => {
-    var result = { Status: true, Message: "", Data: null};    
+    var result = { status: true, message: "", data: null};    
     let data = {            
         LicensePlate: VehicleValues.licensePlate,
         Modal: VehicleValues.modal,
@@ -42,23 +42,23 @@ export const CreateVehicle = async (VehicleValues, companyId) => {
         if (response && response.status === 200) {
             return response.data;
         } else {
-            result.Status = false;
-            result.Message = "Something went wrong";
+            result.status = false;
+            result.message = "Something went wrong";
             return result;
         }
     } catch (error) {
         if (error.response.status === 401) {
             return error.response.status;
         } else {
-            result.Status = false;
-            result.Message = error.Message;
+            result.status = false;
+            result.message = error.Message;
             return result;
         }
     }
 }
 
 export const EditVehicle = async (id , VehicleValues, companyId) => {    
-    var result = { Status: true, Message: "", Data: null};        
+    var result = { status: true, message: "", data: null};        
     let data = {
         VehicleId: id,       
         LicensePlate: VehicleValues.licensePlate,
@@ -72,29 +72,30 @@ export const EditVehicle = async (id , VehicleValues, companyId) => {
         CompanyId: companyId,
     };            
     try {
-        const response = await axios.post(`/api/Vehicle/EditVehicle`, data);      
+        const response = await axios.post(`/api/Vehicle/EditVehicle`, data);              
         if (response && response.status === 200) {
             return response.data;
         } else {
-            result.Status = false;
-            result.Message = "Something went wrong";
+            result.status = false;
+            result.message = "Something went wrong";
             return result;
         }
     } catch (error) {
         if (error.response.status === 401) {
             return error.response.status;
         } else {
-            result.Status = false;
-            result.Message = error.Message;
+            result.status = false;
+            result.message = error.Message;
             return result;
         }
     }
 }
 
-export const DeleteVehicle = async (VehicleId, companyId) => {
-    var result = { Status: true, Message: "", Data: null};
+export const DeleteVehicle = async (vehicleId, companyId, routeId) => {
+    var result = { status: true, message: "", data: null};
     let data = {
-        VehicleId: VehicleId,    
+        RouteId: routeId,
+        VehicleId: vehicleId,    
         CompanyId: companyId,
     };    
     try {
@@ -102,16 +103,16 @@ export const DeleteVehicle = async (VehicleId, companyId) => {
         if (response && response.status === 200) {
             return response.data;
         } else {
-            result.Status = false;
-            result.Message = "Something went wrong";
+            result.status = false;
+            result.message = "Something went wrong";
             return result;
         }
     } catch (error) {
         if (error.response.status === 401) {
             return error.response.status;
         } else {
-            result.Status = false;
-            result.Message = error.Message;
+            result.status = false;
+            result.message = error.Message;
             return result;
         }
     }

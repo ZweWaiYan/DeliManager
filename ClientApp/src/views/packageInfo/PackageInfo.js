@@ -6,6 +6,7 @@ import { CreatePackage, EditPackage, FetchPackageList , DeletePackage } from "sr
 
 import { connect } from 'react-redux';
 import * as actions from './../../actions/authActions';
+import stringValue from "../utilities/StringValue";
 
 const PackageInfo = ({ auth }) => {
 
@@ -14,6 +15,7 @@ const PackageInfo = ({ auth }) => {
     const [dataList, setDataList] = useState([])
     const [titleList, setTitleList] = useState([])
     const [totalCount, setTotalCount] = useState(0)
+    const [apiResponse, setAPIResponse] = useState();
 
     const fetchPackage = async () => {
         const res = await FetchPackageList(auth.companyId);
@@ -31,17 +33,20 @@ const PackageInfo = ({ auth }) => {
     }, []);
 
     const handleCreate = async (data, companyId) => {
-        await CreatePackage(data, companyId);
+        const res = await CreatePackage(data, companyId);
+        setAPIResponse(res);
         fetchPackage();
     };
 
     const handleEdit = async (id, data, companyId) => {
-        await EditPackage(id, data, companyId);
+        const res = await EditPackage(id, data, companyId);
+        setAPIResponse(res);
         fetchPackage();
     };
 
-    const handleDelete = async (id, companyId) => {
-        await DeletePackage(id, companyId);
+    const handleDelete = async (id, companyId, routeId) => {
+        const res = await DeletePackage(id, companyId, routeId);
+        setAPIResponse(res);
         fetchPackage();
     };
 
@@ -49,7 +54,7 @@ const PackageInfo = ({ auth }) => {
         <PageContainer title="PackageInfo Table" description="This is PackageInfo Table">
             <DashboardCard>                
                     <DataTable
-                        title={"PackageInfo Table"}
+                        title={stringValue[2]}
                         titleButton={"New Package"}
                         tableTitle={titleList}
                         tableData={dataList}
@@ -57,7 +62,9 @@ const PackageInfo = ({ auth }) => {
                         companyId={auth.companyId}
                         onCreate={handleCreate}
                         onEdit={handleEdit}
-                        onDelete={handleDelete} />                
+                        onDelete={handleDelete} 
+                        apiResponse={apiResponse}
+                        />                
             </DashboardCard>
         </PageContainer>
     )

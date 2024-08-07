@@ -74,7 +74,7 @@ const deliveryModalStyle = {
 };
 
 
-const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColumnList, packageColumList, packageDateList, deliverymanDataList, vehicleColumnList, vehicleDateList, totalCount, companyId, onCreate, onEdit, onDelete }) => {    
+const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColumnList, packageColumList, packageDateList, deliverymanDataList, vehicleColumnList, vehicleDateList, totalCount, companyId, onCreate, onEdit, onDelete, apiResponse }) => {
 
     console.log("Route Table Render");
 
@@ -163,7 +163,7 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                             </TableBody>
                             :
                             <TableBody>
-                                {vehicleDateList.map((row, rowIndex) => {                                    
+                                {vehicleDateList.map((row, rowIndex) => {
                                     if (row.routeId === textFieldRefs.current.routeId || row.routeId === 0) {
                                         return (
                                             < TableRow
@@ -272,7 +272,7 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                             </TableBody>
                             :
                             <TableBody>
-                                {deliverymanDataList.map((row, rowIndex) => {                                   
+                                {deliverymanDataList.map((row, rowIndex) => {
                                     if (row.routeId === textFieldRefs.current.routeId || row.routeId === 0) {
                                         return (
                                             < TableRow
@@ -410,11 +410,11 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                                 {packageDateList.map((row, rowIndex) => {
                                     if (row.routeId === textFieldRefs.current.routeId || row.routeId === 0) {
                                         return (
-                                            <TableRow key={rowIndex} hover style={{ cursor: 'pointer'}}>
+                                            <TableRow key={rowIndex} hover style={{ cursor: 'pointer' }}>
                                                 <TableCell style={{ textAlign: 'center' }}>
                                                     <Checkbox
                                                         onChange={() => handlePackageSelect(row)}
-                                                        checked={selectedPackage.some(selectedRow => selectedRow.packageId === row.packageId)}                                                        
+                                                        checked={selectedPackage.some(selectedRow => selectedRow.packageId === row.packageId)}
                                                     />
                                                 </TableCell>
                                                 <TableCell style={{ textAlign: 'center' }}> {row.packageTitle} </TableCell>
@@ -473,8 +473,8 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
 
     const [snackBarState, setSnackBarState] = useState({
         open: false,
-        message: '',
-        severity: 'success'
+        // message: '',
+        // severity: 'success'
     });
 
     //Store All Route Date
@@ -483,6 +483,8 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
     const deletePackage = useRef();
     const deleteVehicle = useRef();
     const deleteDeliveryman = useRef();
+
+    const [errors, setErrors] = useState({});
 
     const [totalPackagePrice, setTotalPackagePrice] = useState(0);
     const [totalDeliFee, setTotalDeliFee] = useState(0);
@@ -498,15 +500,16 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
     }, [selectedPackage]);
 
     //Modal Function for common textField
-    const openModal = (type, data = {}, rowIndex = null) => {        
+    const openModal = (type, data = {}, rowIndex = null) => {
 
+        setErrors({});
         setModalState({ open: true, type, rowIndex });
         if (type === 'delete') {
             deletePackage.current = data.packageId
             deleteVehicle.current = data.vehicleId
             deleteDeliveryman.current = data.deliverymanId
-        }        
-    
+        }
+
         const isEmptyData = Object.keys(data).length === 0;
         if (!isEmptyData && type !== 'delete') {
 
@@ -550,22 +553,99 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
     //Delete Function
     const handleDelete = (rowData, rowIndex) => openModal('delete', rowData, rowIndex);
 
+    const validate = () => {
+        
+        const newErrors = {};
+
+        const routeValidationRules = {
+            deliverymanName: [
+                {
+                    test: value => value.trim() === "",
+                    message: "Name must not be empty"
+                }
+            ],
+            vehicleLicensePlate: [
+                {
+                    test: value => value.trim() === "",
+                    message: "LicensePlate must not be empty"
+                }
+            ],
+            packageId: [
+                {
+                    test: value => value === 0,
+                    message: "Package must not be empty"
+                }
+            ],
+            routeTownship: [
+                {
+                    test: value => value.trim() === "",
+                    message: "TownShip must not be empty"
+                }
+            ]
+        }
+
+        Object.keys(routeValidationRules).forEach((field) => {
+
+            let fieldValue = '';                
+
+            switch (field) {
+                case 'routeTownship':
+                    fieldValue = textFieldRefs.current['routeTownship'].value || '';                    
+                    break;
+                case 'deliverymanName':
+                    fieldValue = selectedDeliveryman.deliverymanName || '';
+                    break;
+                case 'vehicleLicensePlate':
+                    fieldValue = selectedVehicle.vehicleLicensePlate || '';
+                    break;
+                case 'packageId':
+                    fieldValue = selectedPackage.length;
+                    break;
+                default:
+                    // fieldValue = '';
+                    break;
+            }
+
+            newErrors[field] = [];
+
+            routeValidationRules[field].forEach((rule) => {
+                
+                if (rule.test(fieldValue)) {
+                    newErrors[field].push(rule.message);
+                }
+            })
+
+            if (newErrors[field].length === 0) {
+                delete newErrors[field];
+            }
+        });        
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    }
+
     //Submit Function for create new route
-    const handleSubmit = (e) => {
+    const handleSubmit = (e) => {        
         e.preventDefault();
         const { type, rowIndex } = modalState;
-        const data = {};        
+        const data = {};
 
         let operation;
-        let successMsg;
-        let errorMsg;
 
-        if (type !== 'delete') {
-            Object.keys(textFieldRefs.current).forEach((key) => {
+        if (type === 'delete') {
+            operation = onDelete(getClickedRowId(rowIndex), deletePackage.current, deleteVehicle.current, deleteDeliveryman.current, companyId);
+            operation.then(() => { setSnackBarState({ open: true }) });
+
+            closeModal();
+        }
+
+        if (type !== 'delete' && validate()) {            
+
+            Object.keys(textFieldRefs.current).forEach((key) => {                
                 data[key] = textFieldRefs.current[key].value;
             });
 
-            const packageId = selectedPackage.map(pkg => pkg.packageId).join(', ');            
+            const packageId = selectedPackage.map(pkg => pkg.packageId).join(', ');
 
             data['deliverymanId'] = selectedDeliveryman.deliverymanId
             data['deliverymanName'] = selectedDeliveryman.deliverymanName
@@ -575,36 +655,19 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
             data['packageTotal'] = selectedPackage.length
             data['totalPackagePrice'] = totalPackagePrice
             data['totalDeliFee'] = totalDeliFee
-        }
 
-        switch (type) {
-            case 'create':
-                operation = onCreate(data, companyId);
-                successMsg = 'Route created successfully';
-                errorMsg = 'Failed to create route.';
-                break;
-            case 'edit':
-                operation = onEdit(getClickedRowId(rowIndex), data, companyId);
-                successMsg = 'Route updated successfully';
-                errorMsg = 'Failed to update route.';
-                break;
-            case 'delete':
-                operation = onDelete(getClickedRowId(rowIndex), deletePackage.current, deleteVehicle.current, deleteDeliveryman.current, companyId);
-                successMsg = 'Route deleted successfully';
-                errorMsg = 'Failed to delete route.';
-                break;
-        }
-
-        operation.then(
-            () => {
-                setSnackBarState({ open: true, message: successMsg, severity: 'success' });
-            },
-            () => {
-                setSnackBarState({ open: true, message: errorMsg, severity: 'error' });
-            },
-        )
-
-        closeModal();
+            switch (type) {
+                case 'create':
+                    operation = onCreate(data, companyId);
+                    break;
+                case 'edit':
+                    operation = onEdit(getClickedRowId(rowIndex), data, companyId);
+                    break;
+            }
+    
+            operation.then(() => { setSnackBarState({ open: true }) });
+            closeModal();
+        }        
     };
 
     //After create route show snackBar / Toast dialog
@@ -649,8 +712,8 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                     </Typography>
                     <form onSubmit={handleSubmit}>
                         {tableTitle.slice(1).map((key) => {
-                            const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
-                            if (key.toLowerCase().includes('vehiclelicenseplate')) {
+                            const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);                            
+                            if (key.toLowerCase().includes('vehiclelicenseplate')) {                                
                                 return (
                                     <TextField
                                         label="VehicleLicensePlate"
@@ -669,6 +732,8 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                                         fullWidth
                                         margin="normal"
                                         variant="outlined"
+                                        error={type !== 'delete' ? !!errors[lowerKey] : false}
+                                        helperText={type != 'delete' ? errors[lowerKey] : ''}
                                     />
                                 )
                             }
@@ -692,6 +757,8 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                                         fullWidth
                                         margin="normal"
                                         variant="outlined"
+                                        error={type !== 'delete' ? !!errors[lowerKey] : false}
+                                        helperText={type != 'delete' ? errors[lowerKey] : ''}
                                     />
                                 )
                             }
@@ -715,6 +782,8 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                                         fullWidth
                                         margin="normal"
                                         variant="outlined"
+                                        error={type !== 'delete' ? !!errors[lowerKey] : false}
+                                        helperText={type != 'delete' ? errors[lowerKey] : ''}
                                     />
                                 )
                             }
@@ -869,6 +938,8 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                                         fullWidth
                                         margin="normal"
                                         variant="outlined"
+                                        error={type !== 'delete' ? !!errors[lowerKey] : false}
+                                        helperText={type != 'delete' ? errors[lowerKey] : ''}
                                     />
                                 )
                             }
@@ -909,6 +980,8 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                                         fullWidth
                                         margin="normal"
                                         variant="outlined"
+                                        error={type !== 'delete' ? !!errors[lowerKey] : false}
+                                        helperText={type != 'delete' ? errors[lowerKey] : ''}
                                     />
                                 )
                             }
@@ -932,6 +1005,8 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                                         fullWidth
                                         margin="normal"
                                         variant="outlined"
+                                        error={type !== 'delete' ? !!errors[lowerKey] : false}
+                                        helperText={type != 'delete' ? errors[lowerKey] : ''}
                                     />
                                 )
                             }
@@ -955,6 +1030,8 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                                         fullWidth
                                         margin="normal"
                                         variant="outlined"
+                                        error={type !== 'delete' ? !!errors[lowerKey] : false}
+                                        helperText={type != 'delete' ? errors[lowerKey] : ''}
                                     />
                                 )
                             }
@@ -973,19 +1050,19 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                                 )
                             }
 
-                            if (key.toLowerCase().includes('packageId')) {
-                                return (
-                                    <TextField
-                                        label="PackageId"
-                                        value={textFieldRefs.current[lowerKey] || ''}
-                                        InputLabelProps={{ shrink: !!textFieldRefs.current[lowerKey] }}
-                                        InputProps={{ readOnly: true }}
-                                        fullWidth
-                                        margin="normal"
-                                        variant="outlined"
-                                    />
-                                )
-                            }
+                            // if (key.toLowerCase().includes('packageId')) {
+                            //     return (
+                            //         <TextField
+                            //             label="PackageId"
+                            //             value={textFieldRefs.current[lowerKey] || ''}
+                            //             InputLabelProps={{ shrink: !!textFieldRefs.current[lowerKey] }}
+                            //             InputProps={{ readOnly: true }}
+                            //             fullWidth
+                            //             margin="normal"
+                            //             variant="outlined"
+                            //         />
+                            //     )
+                            // }
 
                             if (key.toLowerCase().includes('totalpackageprice')) {
                                 return (
@@ -1133,6 +1210,8 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                                         fullWidth
                                         margin="normal"
                                         variant="outlined"
+                                        error={type !== 'delete' ? !!errors[lowerKey] : false}
+                                        helperText={type != 'delete' ? errors[lowerKey] : ''}
                                     />
                                 )
                             }
@@ -1206,8 +1285,8 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                 sx={{ maxWidth: 600 }}
             >
-                <Alert onClose={handleCloseSnackbar} severity={snackBarState.severity} sx={{ width: '100%' }}>
-                    {snackBarState.message}
+                <Alert onClose={handleCloseSnackbar} severity={apiResponse != null ? apiResponse.status ? 'success' : 'error' : null} sx={{ width: '100%' }}>
+                    {apiResponse != null ? apiResponse.message : null}
                 </Alert>
             </Snackbar>
             {title && (
@@ -1220,7 +1299,7 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                         mb={3}
                     >
                         <Box>
-                            <Typography variant="h5">{title}</Typography>
+                            <Typography variant="h5">{title.value}</Typography>
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
                             <Button onClick={() => openModal('create')} variant="contained">{titleButton}</Button>
