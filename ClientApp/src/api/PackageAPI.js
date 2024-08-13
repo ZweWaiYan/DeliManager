@@ -35,11 +35,13 @@ export const CreatePackage = async (packageValues, companyId) => {
         SenderName: packageValues.senderName, 
         SenderPh: packageValues.senderPh,   
         SenderAddress: packageValues.senderAddress,    
+        SenderCity: packageValues.senderCity,
         PickupDate: packageValues.pickupDate,
         PickupTime: packageValues.pickupTime,              
         ReceiverName: packageValues.receiverName,        
         ReceiverPh: packageValues.receiverPh,        
-        ReceiverAddress: packageValues.receiverAddress,      
+        ReceiverAddress: packageValues.receiverAddress,  
+        ReceiverCity: packageValues.receiverCity,    
         RouteId : 0,          
         CompanyId: companyId,                       
     };                
@@ -78,9 +80,11 @@ export const EditPackage = async (id , packageValues, companyId) => {
         PickupDate: packageValues.pickupDate,
         PickupTime: packageValues.pickupTime,
         SenderAddress: packageValues.senderAddress,                  
+        SenderCity: packageValues.senderCity,
         ReceiverName: packageValues.receiverName,        
         ReceiverPh: packageValues.receiverPh,        
         ReceiverAddress: packageValues.receiverAddress,                                                  
+        ReceiverCity: packageValues.receiverCity,
     };                
     try {
         const response = await axios.post(`/api/Package/EditPackage`, data);           

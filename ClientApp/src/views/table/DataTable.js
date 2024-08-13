@@ -9,7 +9,12 @@ import {
     Button,
     Modal,
     TextField,
-    CardContent, Stack, Snackbar, Alert, MenuItem
+    CardContent, Stack, Snackbar, Alert, Select, MenuItem, InputAdornment, FormControl, Tooltip, Fab,
+    IconButton,
+    Menu,
+    FormControlLabel,
+    Switch,
+    MenuList
 } from '@mui/material';
 
 import dayjs from 'dayjs';
@@ -24,9 +29,15 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import packageWayProcess from '../utilities/PackageWayProcess';
 import vehicleStatus from '../utilities/VehicleStatus';
 import deliverymanStatus from '../utilities/DeliverymanStatus';
-import { ruRU } from '@mui/x-date-pickers/locales';
 import stringValue from '../utilities/StringValue';
-import { ReduceCapacity } from '@mui/icons-material';
+
+import {
+    IconFilter,
+    IconSearch,
+    IconClockCancel,
+} from '@tabler/icons';
+import { BorderAllRounded, Start } from '@mui/icons-material';
+import { filter } from 'lodash';
 
 //Delete Modal Style
 const deleteModalStyle = {
@@ -49,7 +60,7 @@ const createEditModalStyle = {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 500,
+    width: 550,
     maxHeight: '95vh',
     bgcolor: 'background.paper',
     display: 'block',
@@ -273,6 +284,33 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
         rowIndex: null
     });
 
+    //menu filter
+    const [filtermodalState, setFilterModalState] = useState({
+        open: false,
+    });
+
+    const [menuFilter, setMenuFilter] = useState({        
+        //for all table
+        deliverymanStatus: '',
+
+        //vehicle
+        vehicleStatus: '',
+        capacity: '',
+        insuranceExpiryDate: '',
+        fuelLevel: '',
+
+        //Package
+        packageWayProcess: '',
+        packageQty: '',
+        packagePrice: '',
+        deliFee: '',
+        collectMoney: '',
+        senderCity: '',
+        receiverCity: '',
+        pickupDate: '',
+        receivedDate: '',
+    });
+
     const [snackBarState, setSnackBarState] = useState({
         open: false,
         message: '',
@@ -280,6 +318,9 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
     });
 
     const [errors, setErrors] = useState({});
+    const [filteredData, setFilteredData] = useState(tableData);
+
+    const searchRef = useRef('');
 
     const textFieldRefs = useRef({});
     const routeId = useRef({});
@@ -301,9 +342,166 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
         }
     }
 
+    const openFilterModal = () => {
+        setFilterModalState({ open: true });
+    }
+
     const closeModal = () => {
         setModalState({ open: false, type: 'create', rowIndex: null });
+        setFilterModalState({ open: false });
     };
+
+    useEffect(() => {
+        setFilteredData(tableData);
+    }, [tableData]);
+
+    const handleSearch = (event) => {
+
+        const { name, value } = event.target;
+
+        searchRef.current = value.toLowerCase();
+
+        let filteredData = tableData;
+
+        if (searchRef.current) {
+            switch (title.id) {
+                case 1:
+                    filteredData = filteredData.filter(item => {
+                        return item.deliverymanName.toLowerCase().includes(searchRef.current) ||
+                            item.deliverymanPh.toLowerCase().includes(searchRef.current) ||
+                            item.deliverymanAddress.toLowerCase().includes(searchRef.current) ||
+                            item.deliverymanLicenseNo.toLowerCase().includes(searchRef.current) ||
+                            item.deliverymanNRC.toLowerCase().includes(searchRef.current);
+                    });
+                    break;
+                case 2:
+                    filteredData = filteredData.filter(item => {
+                        return item.licensePlate.toLowerCase().includes(searchRef.current) ||
+                            item.modal.toLowerCase().includes(searchRef.current) ||
+                            item.manufacturer.toLowerCase().includes(searchRef.current) ||
+                            item.capacity.toString().includes(searchRef.current) ||
+                            item.fuelLevel.toString().includes(searchRef.current) ||
+                            item.insuranceExpiryDate.toLowerCase().includes(searchRef.current)
+                    });
+                    break;
+                case 3:
+                    filteredData = filteredData.filter(item => {
+                        return item.packageTitle.toLowerCase().includes(searchRef.current) ||
+                            item.senderName.toLowerCase().includes(searchRef.current) ||
+                            item.senderAddress.toLowerCase().includes(searchRef.current) ||
+                            item.senderCity.toLowerCase().includes(searchRef.current) ||
+                            item.receiverAddress.toString().includes(searchRef.current) ||
+                            item.receiverCity.toString().includes(searchRef.current) ||
+                            item.receiverName.toLowerCase().includes(searchRef.current)
+                    });
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        setFilteredData(filteredData);
+    };
+
+    const handleFilterBtn = () => {
+        handleFilter();
+    }
+
+    const handleRemoveFilterBtn = () => {
+        setMenuFilter({
+            //filtered or not
+            filtered: false,
+
+            //for all table
+            status: '',
+
+            //vehicle
+            capacity: '',
+            insuranceExpiryDate: '',
+            fuelLevel: '',
+
+            //Package
+            packageWayProcess: '',
+            packageQty: '',
+            PackagePrice: '',
+            DeliFee: '',
+            CollectMoney: '',
+            SenderAddress: '',
+            ReceiverAddress: '',
+            pickupDate: '',
+            receivedDate: '',
+        });
+        closeModal();
+        setFilteredData(tableData);
+    }
+
+    const handleFilter = () => {        
+
+        let filteredData = tableData;
+
+        const filterMap = {
+            //deliveryman
+            deliverymanStatus: (item, value) => item.deliverymanStatus === value,
+
+            //vehicle
+            vehicleStatus: (item, value) => item.vehicleStatus === value,
+            insuranceExpiryDate: (item, value) => item.insuranceExpiryDate === value,
+            capacity: (item, value) => item.capacity === value,
+            fuelLevel: (item, value) => item.fuelLevel === value,
+
+            //package
+            packageWayProcess: (item, value) => item.packageWayProcess === value,
+            packageQty: (item, value) => item.packageQty === value,
+            packagePrice: (item, value) => item.packagePrice === value,
+            deliFee: (item, value) => item.deliFee === value,
+            collectMoney: (item, value) => item.collectMoney === value,
+            senderCity: (item, value) => item.senderCity === value,
+            receiverCity: (item, value) => item.receiverCity === value,
+            pickupDate: (item, value) => item.pickupDate === value,
+            receivedDate: (item, value) => item.receivedDate === value,
+        }
+
+        Object.keys(menuFilter).forEach((key) => {
+            if (menuFilter[key] && filterMap[key]) {
+                filteredData = filteredData.filter(item => {                    
+                    return filterMap[key](item, menuFilter[key])
+                });
+            }
+        })
+
+        setFilteredData(filteredData);
+    }
+
+    const getFilterValue = (event) => {
+
+        const { name, value } = event.target;
+
+        setMenuFilter((menuFilter) => ({
+            ...menuFilter,            
+            [name]: value
+        }));
+    }
+
+    const getFilterDate = (name, newValue) => {
+
+        const formattedDate = dayjs(newValue).format('MM/DD/YYYY')
+
+        setMenuFilter((menuFilter) => ({
+            ...menuFilter,         
+            [name]: formattedDate,
+        }));
+    }
+
+    const removeDateFilter = () => {
+        setMenuFilter((menuFilter) => ({
+            ...menuFilter,
+            //vehicle       
+            insuranceExpiryDate: null,
+            //package
+            pickupDate: null,
+            receivedDate: null,
+        }));
+    }
 
     const handleEdit = (rowData, rowIndex) => openModal('edit', rowData, rowIndex);
 
@@ -465,6 +663,12 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                     message: "SenderAddress must not be empty"
                 },
             ],
+            senderCity: [
+                {
+                    test: value => value.trim() === "",
+                    message: "SenderCity must not be empty"
+                },
+            ],
             receiverName: [
                 {
                     test: value => value.trim() === "",
@@ -485,6 +689,12 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                 {
                     test: value => value.trim() === "",
                     message: "ReceiverAddress must not be empty"
+                },
+            ],
+            receiverCity: [
+                {
+                    test: value => value.trim() === "",
+                    message: "ReceiverCity must not be empty"
                 },
             ],
         };
@@ -548,6 +758,7 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                 data[key] = textFieldRefs.current[key].value;
             });
 
+
             let operation;
 
             switch (type) {
@@ -576,7 +787,6 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
 
     const modalContent = () => {
         const { type } = modalState;
-
         if (type === 'delete') {
             return (
                 <Box sx={deleteModalStyle}>
@@ -627,6 +837,7 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
             </Box>
         );
     };
+
 
     const vehicleModalContent = () => {
         const { type } = modalState;
@@ -966,6 +1177,320 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
         }
     }
 
+    const getFilterModalContent = () => {
+        switch (title.id) {
+            case 1:
+                return deliverymanFilterModalContent();
+            case 2:
+                return vehicleFilterModalContent();
+            case 3:
+                return packageFilterModalContent();
+        }
+    }
+
+    const vehicleFilterModalContent = () => {
+
+        return (
+            <Box sx={createEditModalStyle}>
+                <Typography sx={{ mb: '30px' }} variant="h6">
+                    Vehicle Filter
+                </Typography>
+                <Stack
+                    direction={'row'}
+                    spacing={2}
+                    justifyContent="flex-start"
+                >
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                            label="Insurance Expiry Date"
+                            value={menuFilter.insuranceExpiryDate ? dayjs(menuFilter.insuranceExpiryDate, "MM/DD/YYYY") : null}
+                            onChange={(newValue) => getFilterDate('insuranceExpiryDate', newValue)}
+                        />
+                    </LocalizationProvider>
+                    <Tooltip title="Remove Date Filter">
+                        <IconButton onClick={removeDateFilter}>
+                            <IconClockCancel />
+                        </IconButton>
+                    </Tooltip>
+                </Stack>
+                <FormControl fullWidth sx={{ mb: '20px', mt: '20px' }}>
+                    <TextField
+                        select
+                        label="Status"
+                        name="vehicleStatus"
+                        value={menuFilter.vehicleStatus}
+                        onChange={getFilterValue}
+                        variant="outlined"
+                    >
+                        <MenuItem value={0} divider>None</MenuItem>
+                        {getStatusSwitchData()}
+                    </TextField>
+                </FormControl>
+
+                <FormControl fullWidth sx={{ mb: '20px' }}>
+                    <TextField
+                        select
+                        label="Capacity"
+                        name="capacity"
+                        value={menuFilter.capacity}
+                        onChange={getFilterValue}
+                        variant="outlined"
+                    >
+                        <MenuItem value={0} divider>0</MenuItem>
+                        {getSwitchData('capacity')}
+                    </TextField>
+                </FormControl>
+
+                <FormControl fullWidth sx={{ mb: '40px' }}>
+                    <TextField
+                        select
+                        label="Fuel Level"
+                        name="fuelLevel"
+                        value={menuFilter.fuelLevel}
+                        onChange={getFilterValue}
+                        variant="outlined"
+                    >
+                        <MenuItem value={0} divider>0%</MenuItem>
+                        {getSwitchData('fuelLevel')}
+                    </TextField>
+                </FormControl>
+                <Stack
+                    direction={'row'}
+                    spacing={2}
+                    justifyContent="space-between"
+                >
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleFilterBtn}
+                        fullWidth
+                    >
+                        Filter
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        onClick={handleRemoveFilterBtn}
+                        fullWidth
+                    >
+                        Remove Filter
+                    </Button>
+                </Stack>
+            </Box>
+        );
+    }
+
+    const deliverymanFilterModalContent = () => {
+
+        return (
+            <Box sx={createEditModalStyle}>
+                <Typography sx={{ mb: '30px' }} variant="h6">
+                    Deliveryman Filter
+                </Typography>
+                <FormControl fullWidth sx={{ mb: '20px' }}>
+                    <TextField
+                        select
+                        label="Status"
+                        name="deliverymanStatus"
+                        value={menuFilter.deliverymanStatus}
+                        onChange={getFilterValue}
+                        variant="outlined"
+                    >
+                        <MenuItem value={0} divider>None</MenuItem>
+                        {getStatusSwitchData()}
+                    </TextField>
+                </FormControl>
+                <Stack
+                    direction={'row'}
+                    spacing={2}
+                    justifyContent="space-between"
+                >
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleFilterBtn}
+                        fullWidth
+                    >
+                        Filter
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        onClick={handleRemoveFilterBtn}
+                        fullWidth
+                    >
+                        Remove Filter
+                    </Button>
+                </Stack>
+            </Box>
+        );
+    }
+
+    const packageFilterModalContent = () => {
+
+        return (
+            <Box sx={createEditModalStyle}>
+                <Typography sx={{ mb: '30px' }} variant="h6">
+                    Package Filter
+                </Typography>
+                {/* PickUp Date and Received Date UI Session                  */}
+                <Stack
+                    direction={'row'}
+                    spacing={2}
+                    justifyContent="flex-start"
+                >
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                            label="Pickup Date"
+                            value={menuFilter.pickupDate ? dayjs(menuFilter.pickupDate, "MM/DD/YYYY") : null}
+                            onChange={(newValue) => getFilterDate('pickupDate', newValue)}
+                        />
+                    </LocalizationProvider>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                            label="Received Date"
+                            value={menuFilter.receivedDate ? dayjs(menuFilter.receivedDate, "MM/DD/YYYY") : null}
+                            onChange={(newValue) => getFilterDate('receivedDate', newValue)}
+                        />
+                    </LocalizationProvider>
+                    <Tooltip title="Remove Date Filter">
+                        <IconButton onClick={removeDateFilter}>
+                            <IconClockCancel />
+                        </IconButton>
+                    </Tooltip>
+                </Stack>
+                <FormControl fullWidth sx={{ mt: '20px', mb: '20px' }}>
+                    <TextField
+                        select
+                        label="PackageWayProcess"
+                        name="packageWayProcess"
+                        value={menuFilter.packageWayProcess}
+                        onChange={getFilterValue}
+                        variant="outlined"
+                    >
+                        <MenuItem value={0} divider>None</MenuItem>
+                        {getStatusSwitchData()}
+                    </TextField>
+                </FormControl>
+                {/* Package Price , Deli Fee , Collect Money UI Session */}
+                <Stack
+                    direction={'row'}
+                    spacing={2}
+                    justifyContent="flex-start"
+                >
+                    <FormControl fullWidth sx={{ mb: '20px' }}>
+                        <TextField
+                            select
+                            label="PackagePrice"
+                            name="packagePrice"
+                            value={menuFilter.packagePrice}
+                            onChange={getFilterValue}
+                            variant="outlined"
+                        >
+                            <MenuItem value={0} divider>0</MenuItem>
+                            {getSwitchData('packagePrice')}
+                        </TextField>
+                    </FormControl>
+                    <FormControl fullWidth sx={{ mb: '20px' }}>
+                        <TextField
+                            select
+                            label="DeliFee"
+                            name="deliFee"
+                            value={menuFilter.deliFee}
+                            onChange={getFilterValue}
+                            variant="outlined"
+                        >
+                            <MenuItem value={0} divider>0</MenuItem>
+                            {getSwitchData('deliFee')}
+                        </TextField>
+                    </FormControl>
+                    <FormControl fullWidth sx={{ mb: '20px' }}>
+                        <TextField
+                            select
+                            label="CollectMoney"
+                            name="collectMoney"
+                            value={menuFilter.collectMoney}
+                            onChange={getFilterValue}
+                            variant="outlined"
+                        >
+                            <MenuItem value={0} divider>0</MenuItem>
+                            {getSwitchData('collectMoney')}
+                        </TextField>
+                    </FormControl>
+                </Stack>
+                <FormControl fullWidth sx={{ mt: '20px', mb: '20px' }}>
+                    <TextField
+                        select
+                        label="Package Qty"
+                        name="packageQty"
+                        value={menuFilter.packageQty}
+                        onChange={getFilterValue}
+                        variant="outlined"
+                    >
+                        <MenuItem value={0} divider>0</MenuItem>
+                        {getSwitchData('packageQty')}
+                    </TextField>
+                </FormControl>
+                <Stack
+                    direction={'row'}
+                    spacing={2}
+                    justifyContent="space-between"
+                    sx={{ mb: '20px' }}
+                >
+                    <FormControl fullWidth>
+                        <TextField
+                            select
+                            label="Sender City"
+                            name="senderCity"
+                            value={menuFilter.senderCity}
+                            onChange={getFilterValue}
+                            variant="outlined"
+                        >
+                            <MenuItem value={0} divider>None</MenuItem>
+                            {getSwitchData('senderCity')}
+                        </TextField>
+                    </FormControl>
+                    <FormControl fullWidth>
+                        <TextField
+                            select
+                            label="Receiver City"
+                            name="receiverCity"
+                            value={menuFilter.receiverCity}
+                            onChange={getFilterValue}
+                            variant="outlined"
+                        >
+                            <MenuItem value={0} divider>None</MenuItem>
+                            {getSwitchData('receiverCity')}
+                        </TextField>
+                    </FormControl>
+                </Stack>
+                <Stack
+                    direction={'row'}
+                    spacing={2}
+                    justifyContent="space-between"
+                >
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleFilterBtn}
+                        fullWidth
+                    >
+                        Filter
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        onClick={handleRemoveFilterBtn}
+                        fullWidth
+                    >
+                        Remove Filter
+                    </Button>
+                </Stack>
+            </Box>
+        );
+    }
+
+
     const getProcessNameById = (id) => {
         const process = packageWayProcess.find(p => p.id === id);
         return process ? process.status : 'Unknown Process';
@@ -994,6 +1519,46 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
         }
     }
 
+    const getStatusSwitchData = () => {
+        switch (title.id) {
+            case 1:
+                return deliverymanStatus.map((item, index) => (
+                    <MenuItem key={index} divider value={item.id}>{item.status}</MenuItem>
+                ))
+            case 2:
+                return vehicleStatus.map((item, index) => (
+                    <MenuItem key={index} divider value={item.id}>{item.status}</MenuItem>
+                ))
+            case 3:
+                return packageWayProcess.map((item, index) => (
+                    <MenuItem key={index} divider value={item.id}>{item.status}</MenuItem>
+                ))
+            default:
+                break;
+        }
+    }
+
+    const getSwitchData = (type) => {
+
+        const seenValues = new Set();
+
+        return tableData.filter((item) => {
+            const value = item[type];
+            if (value === 0 || seenValues.has(value)) {
+                return false;
+            }
+            seenValues.add(value);
+            return true;
+        })
+            .map(item => item[type])
+            .sort((a, b) => a - b)
+            .map((value, index) => (
+                <MenuItem key={index} divider value={value}>{value}</MenuItem>
+            ));
+
+
+    }
+
     return (
         <>
             <Modal
@@ -1002,12 +1567,15 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >
-                {/* {title.toLowerCase().includes('package') ?
-                    packageModalContent()
-                    :
-                    modalContent()
-                } */}
                 {getModalContent()}
+            </Modal>
+            <Modal
+                open={filtermodalState.open}
+                onClose={closeModal}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                {getFilterModalContent()}
             </Modal>
             <Snackbar
                 open={snackBarState.open}
@@ -1022,30 +1590,83 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
             </Snackbar>
             {title.value && (
                 <CardContent sx={{ p: "3px" }}>
+                    <Typography
+                        variant='h5'
+                        sx={{
+                            whiteSpace: 'nowrap',
+                            pt: { xs: 0, sm: 1 },
+                            mb: 5
+                        }}
+                    >
+                        {title.value}
+                    </Typography>
                     <Stack
-                        direction="row"
+                        direction={{ xs: 'column', sm: 'row' }}
                         spacing={2}
-                        justifyContent="space-between"
-                        alignItems="center"
+                        justifyContent="flex-end"
+                        alignItems="flex-end"
                         mb={3}
                     >
-                        <Box>
-                            <Typography variant="h5">{title.value}</Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-                            <Button onClick={() => openModal('create')} variant="contained">{titleButton}</Button>
+                        <Box
+                            display="flex"
+                            alignItems="start"
+                            justifyContent={{ xs: 'flex-start', sm: "flex-end" }}
+                            width='100%'
+                            flexDirection={'row'}
+                        >
+                            <TextField
+                                name="search"
+                                value={searchRef.current}
+                                onChange={handleSearch}
+                                fullWidth
+                                variant='outlined'
+                                sx={{
+                                    width: 200,
+                                    mr: { xs: 0, sm: 2 },
+                                    mb: 1,
+                                }}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <IconSearch />
+                                        </InputAdornment>
+                                    ),
+                                    sx: { height: '45px' },
+                                }}>
+                            </TextField>
+                            <Box width={{ xs: '10px', sm: 0 }}></Box>
+                            <Tooltip title="Filter" sx={{ mr: { xs: 0, sm: 2 }, }}>
+                                <Fab
+                                    size="small"
+                                    color="primary"
+                                    onClick={openFilterModal}
+                                >
+                                    <IconFilter size="16" />
+                                </Fab>
+                            </Tooltip>
+                            <Box width={{ xs: '10px', sm: 0 }}></Box>
+                            <Button
+                                sx={{
+                                    width: 150,
+                                    padding: { xs: '10px 12px', sm: '8px 16px' },
+                                    fontSize: '14',
+                                }}
+                                onClick={() => openModal('create')}
+                                variant='contained'
+                            >{titleButton}
+                            </Button>
                         </Box>
                     </Stack>
                 </CardContent>
             )}
-            <Box sx={{ overflow: 'auto', width: { xs: '280px', sm: 'auto' } }}>
-                <Table aria-label="simple table" sx={{ whiteSpace: "nowrap", mt: 2 }}>
+            <Box sx={{ overflow: 'auto', width: { xs: '100%', sm: 'auto' }, mt: 2 }}>
+                <Table aria-label="simple table" sx={{ whiteSpace: "nowrap" }}>
                     <TableHead>
                         <TableRow>
                             {tableTitle.map((column, index) => {
                                 if (column != "RouteId" && column != "DeliverymanImage") {
                                     return (
-                                        <TableCell key={index} style={{ textAlign: 'center' }}>
+                                        <TableCell key={index} style={{ textAlign: 'center', minWidth: 120 }}>
                                             <Typography variant="subtitle2" fontWeight={600}>
                                                 {column}
                                             </Typography>
@@ -1053,7 +1674,7 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                                     )
                                 }
                             })}
-                            <TableCell style={{ textAlign: 'center' }}>
+                            <TableCell style={{ textAlign: 'center', minWidth: 120 }}>
                                 <Typography variant="subtitle2" fontWeight={600}>
                                     Actions
                                 </Typography>
@@ -1064,30 +1685,47 @@ const DataTable = ({ title, titleButton, tableTitle, tableData, totalCount, comp
                         <TableBody>
                             <TableRow>
                                 <TableCell colSpan={tableTitle.length + 1} style={{ textAlign: 'center', padding: '50px' }}>
-                                    <div style={{ fontSize: '20px', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                    <Typography variant="h6" fontWeight="bold">
                                         No Data
-                                    </div>
+                                    </Typography>
                                 </TableCell>
                             </TableRow>
                         </TableBody>
                         :
                         <TableBody>
-                            {tableData.map((row, rowIndex) => (
+                            {filteredData.map((row, rowIndex) => (
                                 <TableRow key={rowIndex}>
                                     {tableTitle.map((column, colIndex) => {
                                         if (column != "RouteId" && column != "DeliverymanImage") {
                                             const value = row[column.charAt(0).toLowerCase() + column.slice(1)]
                                             return (
-                                                < TableCell key={colIndex} style={{ textAlign: 'center' }}>
+                                                < TableCell key={colIndex} style={{ textAlign: 'center', minWidth: 120 }}>
                                                     {getRowData(column, row, value)}
                                                 </TableCell>
                                             )
                                         }
                                     })}
                                     <TableCell>
-                                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                            <Button disabled={row.routeId != 0 ? true : false} sx={{ marginRight: 1 }} onClick={() => handleEdit(row, rowIndex)} variant="outlined" color="secondary">Edit</Button>
-                                            <Button disabled={row.routeId != 0 ? true : false} style={{ justifyContent: 'center' }} variant="outlined" onClick={() => handleDelete(row, rowIndex)} color="error">Delete</Button>
+                                        <div style={{ textAlign: 'center', minWidth: 150 }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                                                <Button
+                                                    disabled={row.routeId !== 0}
+                                                    sx={{ marginRight: 1 }}
+                                                    onClick={() => handleEdit(row, rowIndex)}
+                                                    variant="outlined"
+                                                    color="secondary"
+                                                >
+                                                    Edit
+                                                </Button>
+                                                <Button
+                                                    disabled={row.routeId !== 0}
+                                                    variant="outlined"
+                                                    onClick={() => handleDelete(row, rowIndex)}
+                                                    color="error"
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </Box>
                                         </div>
                                     </TableCell>
                                 </TableRow>

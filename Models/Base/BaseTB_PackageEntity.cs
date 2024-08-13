@@ -19,11 +19,13 @@ namespace DeliManager.Models.Base
         private String _senderName;
         private String _senderPh;
         private String _senderAddress;
+        private String _senderCity;
         private String _pickupDate;
         private String _pickupTime;
         private String _receiverName;
         private String _receiverPh;
         private String _receiverAddress;
+        private String _receiverCity;
         private String _receivedDate;
         private String _receivedTime;
         private Int32? _routeId;
@@ -46,11 +48,13 @@ namespace DeliManager.Models.Base
         public String SenderName { get { return this._senderName.ToNonNullable(); } set { this._senderName = value; } }
         public String SenderPh { get { return this._senderPh.ToNonNullable(); } set { this._senderPh = value; } }
         public String SenderAddress { get { return this._senderAddress.ToNonNullable(); } set { this._senderAddress = value; } }
+        public String SenderCity { get { return this._senderCity.ToNonNullable();} set {this._senderCity = value; }}
         public String PickupDate { get { return this._pickupDate.ToNonNullable(); } set { this._pickupDate = value; } }
         public String PickupTime { get { return this._pickupTime.ToNonNullable(); } set { this._pickupTime = value; } }
         public String ReceiverName { get { return this._receiverName.ToNonNullable(); } set { this._receiverName = value; } }
         public String ReceiverPh { get { return this._receiverPh.ToNonNullable(); } set { this._receiverPh = value; } }
         public String ReceiverAddress { get { return this._receiverAddress.ToNonNullable(); } set { this._receiverAddress = value; } }
+        public String ReceiverCity { get { return this._receiverCity.ToNonNullable();} set {this._receiverCity = value; }}
         public String ReceivedDate { get { return this._receivedDate.ToNonNullable(); } set { this._receivedDate = value; } }
         public String ReceivedTime { get { return this._receivedTime.ToNonNullable(); } set { this._receivedTime = value; } }
         public Int32? RouteId { get { return this._routeId.ToNonNullable(); } set { this._routeId = value; } }
@@ -73,11 +77,13 @@ namespace DeliManager.Models.Base
         public bool IsSenderNameNull() { return this._senderName == null; }
         public bool IsSenderPhNull() { return this._senderPh == null; }
         public bool IsSenderAddressNull() { return this._senderAddress == null; }
+        public bool IsSenderCityNull() { return this._senderCity == null; }
         public bool IsPickupDateNull() { return this._pickupDate == null; }
         public bool IsPickupTimeNull() { return this._pickupTime == null; }
         public bool IsReceiverNameNull() { return this._receiverName == null; }
         public bool IsReceiverPhNul() { return this._receiverPh == null; }
         public bool IsReceiverAddressNull() { return this._receiverAddress == null; }
+        public bool IsReceiverCityNull() { return this._receiverCity == null; }
         public bool IsReceivedDateNull() { return this._receivedDate == null; }
         public bool IsReceivedTimeNull() { return this._receivedTime == null; }
         public bool IsRouteIdNull() { return this._routeId == null; }
@@ -100,11 +106,13 @@ namespace DeliManager.Models.Base
         public void SetSenderNameNull() { this._senderName = null; }
         public void SetSenderPhNull() { this._senderPh = null; }
         public void SetSenderAddressNull() { this._senderAddress = null; }
+        public void SetSenderCityNull() { this._senderCity = null; }
         public void SetPickupDateNull() { this._pickupDate = null; }
         public void SetPickupTimeNull() { this._pickupTime = null; }
         public void SetReceiverNameNull() { this._receiverName = null; }
         public void SetReceiverPhNull() { this._receiverPh = null; }
         public void SetReceiverAddressNull() { this._receiverAddress = null; }
+        public void SetReceiverCityNull() { this._receiverCity = null; }
         public void SetReceivedDateNull() { this._receivedDate = null; }
         public void SetReceivedTimeNull() { this._receivedTime = null; }
         public void SetRouteIdNull() { this._routeId = null; }

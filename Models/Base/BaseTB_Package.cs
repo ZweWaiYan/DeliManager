@@ -105,6 +105,11 @@ namespace DeliManager.Models.Base
                 columnList.Add("SenderAddress");
                 paramList.Add("@SenderAddress");
             }
+             if (!srcClass.IsSenderCityNull())
+            {
+                columnList.Add("SenderCity");
+                paramList.Add("@SenderCity");
+            }
             if (!srcClass.IsPickupDateNull())
             {
                 columnList.Add("PickupDate");
@@ -129,6 +134,11 @@ namespace DeliManager.Models.Base
             {
                 columnList.Add("ReceiverAddress");
                 paramList.Add("@ReceiverAddress");
+            }
+            if (!srcClass.IsReceiverCityNull())
+            {
+                columnList.Add("ReceiverCity");
+                paramList.Add("@ReceiverCity");
             }
             if (!srcClass.IsReceivedDateNull())
             {
@@ -229,6 +239,10 @@ namespace DeliManager.Models.Base
             {
                 setList.Add("SenderAddress = @SenderAddress");
             }
+            if (!srcClass.IsSenderCityNull())
+            {
+                setList.Add("SenderCity = @SenderCity");
+            }
             if (!srcClass.IsPickupDateNull())
             {
                 setList.Add("PickupDate = @PickupDate");
@@ -240,7 +254,7 @@ namespace DeliManager.Models.Base
             if (!srcClass.IsReceiverNameNull())
             {
                 setList.Add("ReceiverName = @ReceiverName");
-            }
+            }            
             if (!srcClass.IsReceiverPhNul())
             {
                 setList.Add("ReceiverPh = @ReceiverPh");
@@ -248,6 +262,10 @@ namespace DeliManager.Models.Base
             if (!srcClass.IsReceiverAddressNull())
             {
                 setList.Add("ReceiverAddress = @ReceiverAddress");
+            }
+            if (!srcClass.IsReceiverCityNull())
+            {
+                setList.Add("ReceiverCity = @ReceiverCity");
             }
             if (!srcClass.IsReceivedDateNull())
             {
@@ -330,11 +348,13 @@ namespace DeliManager.Models.Base
                 { "@SenderName" , srcClass.SenderName},
                 { "@SenderPh" , srcClass.SenderPh},
                 { "@SenderAddress" , srcClass.SenderAddress},
+                { "@SenderCity" , srcClass.SenderCity},
                 { "@PickupDate" , srcClass.PickupDate},
                 { "@PickupTime" , srcClass.PickupTime},
                 { "@ReceiverName" , srcClass.ReceiverName},
                 { "@ReceiverPh" , srcClass.ReceiverPh},
                 { "@ReceiverAddress" , srcClass.ReceiverAddress},
+                { "@ReceiverCity" , srcClass.ReceiverCity},
                 { "@ReceivedDate" , srcClass.ReceivedDate},
                 { "@ReceivedTime" , srcClass.ReceivedTime},
                 { "@RouteId" , srcClass.RouteId},
@@ -500,11 +520,13 @@ namespace DeliManager.Models.Base
             targetClass.CollectMoney = NullableValueExtension.DBNullToDoubleZero(row["CollectMoney"]);
             targetClass.SenderName = row["SenderName"].ToString();
             targetClass.SenderAddress = row["SenderAddress"].ToString();
+            targetClass.SenderCity = row["SenderCity"].ToString();
             targetClass.SenderPh = row["SenderPh"].ToString();
             targetClass.PickupDate = row["PickupDate"].ToString();
             targetClass.PickupTime = row["PickupTime"].ToString();
             targetClass.ReceiverName = row["ReceiverName"].ToString();
             targetClass.ReceiverAddress = row["ReceiverAddress"].ToString();
+            targetClass.ReceiverCity = row["ReceiverCity"].ToString();
             targetClass.ReceiverPh = row["ReceiverPh"].ToString();
             targetClass.ReceivedDate = row["ReceivedDate"].ToString();
             targetClass.ReceivedTime = row["ReceivedTime"].ToString();

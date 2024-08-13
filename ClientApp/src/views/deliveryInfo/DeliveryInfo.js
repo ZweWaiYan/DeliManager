@@ -57,7 +57,7 @@ const DeliveryInfo = ({ auth }) => {
         <PageContainer title="DeliveryInfo Table" description="This is DeliveryInfo Table">
             <DashboardCard>
                 <DataTable
-                    title={stringValue[0]}                    
+                    title={stringValue[0]}                              
                     titleButton={"New Delivery"}
                     tableTitle={titleList}
                     tableData={dataList}

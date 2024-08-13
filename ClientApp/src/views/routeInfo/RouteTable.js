@@ -9,7 +9,8 @@ import {
     Button,
     Modal,
     TextField,
-    CardContent, Stack, Snackbar, Alert, MenuItem, Checkbox, InputAdornment, Tooltip
+    CardContent, Stack, Snackbar, Alert, Select, MenuItem, InputAdornment, FormControl, Tooltip, Fab,
+    Checkbox
 } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 
@@ -25,8 +26,14 @@ import vehicleStatus from '../utilities/VehicleStatus';
 import routeStatus from '../utilities/RouteStatus';
 import deliverymanStatus from '../utilities/DeliverymanStatus';
 
-import { IconPlus } from '@tabler/icons';
+import {
+    IconPlus,
+    IconFilter,
+    IconSearch,
+    IconClockCancel,
+} from '@tabler/icons';
 import { type } from '@testing-library/user-event/dist/type';
+import PackageWayProcess from '../utilities/PackageWayProcess';
 
 //Delete Modal Style
 const deleteModalStyle = {
@@ -224,7 +231,7 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
         }
     };
 
-    //Modal for choose vehicle
+    //Modal for choose deliveryman
     const deliverymanModalContent = () => {
 
         return (
@@ -260,7 +267,7 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                                 </TableCell>
                             </TableRow>
                         </TableHead>
-                        {vehicleColumnList.length === 0 ?
+                        {deliverymanDataList.length === 0 ?
                             <TableBody>
                                 <TableRow>
                                     <TableCell colSpan={tableTitle.length + 1} style={{ textAlign: 'center', padding: '50px' }}>
@@ -272,7 +279,7 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                             </TableBody>
                             :
                             <TableBody>
-                                {deliverymanDataList.map((row, rowIndex) => {
+                                {deliverymanDataList.map((row, rowIndex) => {                                    
                                     if (row.routeId === textFieldRefs.current.routeId || row.routeId === 0) {
                                         return (
                                             < TableRow
@@ -489,6 +496,26 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
     const [totalPackagePrice, setTotalPackagePrice] = useState(0);
     const [totalDeliFee, setTotalDeliFee] = useState(0);
 
+    const searchRef = useRef('');
+
+    const [filteredData, setFilteredData] = useState(tableData);
+    const [filtermodalState, setFilterModalState] = useState({
+        open: false,
+    });
+
+    const [menuFilter, setMenuFilter] = useState({
+        //for table               
+        packageTotal: '',
+        routeRemainQty: '',
+        routeStatus: '',
+        routeTownship: '',
+        totalPackagePrice: '',
+        totalDeliFee: '',
+        totalCollectMoney: '',
+        startDate: '',
+        finishDate: '',
+    });
+
     //UseEffect for TotalPackagePrice and TotalDeliFee
     useEffect(() => {
         const totalDeliFee = selectedPackage.reduce((sum, pkg) => sum + pkg.deliFee, 0);
@@ -545,7 +572,12 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
         setModalState({ open: false, type: 'create', rowIndex: null });
         setSelectedDeliveryman({ deliverymanName: '', deliverymanId: null });
         setSelectedVehicle({ vehicleLicensePlate: '', vehicleId: null });
+        setFilterModalState({ open: false });
     };
+
+    useEffect(() => {
+        setFilteredData(tableData);
+    }, [tableData]);
 
     //Edit Function
     const handleEdit = (rowData, rowIndex) => openModal('edit', rowData, rowIndex);
@@ -554,7 +586,7 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
     const handleDelete = (rowData, rowIndex) => openModal('delete', rowData, rowIndex);
 
     const validate = () => {
-        
+
         const newErrors = {};
 
         const routeValidationRules = {
@@ -586,11 +618,11 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
 
         Object.keys(routeValidationRules).forEach((field) => {
 
-            let fieldValue = '';                
+            let fieldValue = '';
 
             switch (field) {
                 case 'routeTownship':
-                    fieldValue = textFieldRefs.current['routeTownship'].value || '';                    
+                    fieldValue = textFieldRefs.current['routeTownship'].value || '';
                     break;
                 case 'deliverymanName':
                     fieldValue = selectedDeliveryman.deliverymanName || '';
@@ -609,7 +641,7 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
             newErrors[field] = [];
 
             routeValidationRules[field].forEach((rule) => {
-                
+
                 if (rule.test(fieldValue)) {
                     newErrors[field].push(rule.message);
                 }
@@ -618,14 +650,14 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
             if (newErrors[field].length === 0) {
                 delete newErrors[field];
             }
-        });        
+        });
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     }
 
     //Submit Function for create new route
-    const handleSubmit = (e) => {        
+    const handleSubmit = (e) => {
         e.preventDefault();
         const { type, rowIndex } = modalState;
         const data = {};
@@ -639,9 +671,9 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
             closeModal();
         }
 
-        if (type !== 'delete' && validate()) {            
+        if (type !== 'delete' && validate()) {
 
-            Object.keys(textFieldRefs.current).forEach((key) => {                
+            Object.keys(textFieldRefs.current).forEach((key) => {
                 data[key] = textFieldRefs.current[key].value;
             });
 
@@ -664,16 +696,307 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                     operation = onEdit(getClickedRowId(rowIndex), data, companyId);
                     break;
             }
-    
+
             operation.then(() => { setSnackBarState({ open: true }) });
             closeModal();
-        }        
+        }
     };
 
     //After create route show snackBar / Toast dialog
     const handleCloseSnackbar = () => {
         setSnackBarState({ open: false, message: '', severity: 'success' });
     };
+
+    //Search and Filter
+    const handleSearch = (event) => {
+
+        const { name, value } = event.target;
+
+        searchRef.current = value.toLowerCase();
+
+        let filteredData = tableData;
+
+        if (searchRef.current) {
+            filteredData = filteredData.filter(item => {
+                return item.deliverymanName.toLowerCase().includes(searchRef.current) ||
+                    item.vehicleLicensePlate.toLowerCase().includes(searchRef.current) ||
+                    item.routeTownship.toLowerCase().includes(searchRef.current)
+            });
+        }
+
+        setFilteredData(filteredData);
+    };
+
+    const openFilterModal = () => {
+        setFilterModalState({ open: true });
+    }
+
+    const handleFilterBtn = () => {
+        handleFilter();
+    }
+
+    const handleRemoveFilterBtn = () => {
+        setMenuFilter({
+            //filtered or not
+            filtered: false,
+
+            packageStatus: '',
+        });
+        closeModal();
+        setFilteredData(tableData);
+    }
+
+    const handleFilter = () => {
+
+        let filteredData = tableData;
+
+        const filterMap = {
+            packageTotal: (item, value) => item.packageTotal === value,
+            routeRemainQty: (item, value) => item.routeRemainQty === value,
+            routeTownship: (item, value) => item.routeTownship === value,
+            routeStatus: (item, value) => item.routeStatus === value,
+            totalPackagePrice: (item, value) => item.totalPackagePrice === value,
+            totalDeliFee: (item, value) => item.totalDeliFee === value,
+            totalCollectMoney: (item, value) => item.totalCollectMoney === value,
+            startDate: (item, value) => item.startDate === value,
+            startTime: (item, value) => item.startTime === value,
+            finishDate: (item, value) => item.finishDate === value,
+            finishTime: (item, value) => item.finishTime === value,
+        }
+
+        Object.keys(menuFilter).forEach((key) => {
+            if (menuFilter[key] && filterMap[key]) {
+                filteredData = filteredData.filter(item => {
+                    return filterMap[key](item, menuFilter[key])
+                });
+            }
+        })
+
+        setFilteredData(filteredData);
+    }
+
+    const getStatusSwitchData = () => {
+        return routeStatus.map((item, index) => (
+            <MenuItem key={index} divider value={item.id}>{item.status}</MenuItem>
+        ))
+    }
+
+    const getSwitchData = (type) => {
+
+        const seenValues = new Set();
+
+        return tableData.filter((item) => {
+            const value = item[type];
+            if (value === 0 || seenValues.has(value)) {
+                return false;
+            }
+            seenValues.add(value);
+            return true;
+        })
+            .map(item => item[type])
+            .sort((a, b) => a - b)
+            .map((value, index) => (
+                <MenuItem key={index} divider value={value}>{value}</MenuItem>
+            ));
+
+
+    }
+
+    const getFilterValue = (event) => {
+
+        const { name, value } = event.target;
+
+        setMenuFilter((menuFilter) => ({
+            ...menuFilter,
+            [name]: value
+        }));
+    }
+
+    const getFilterDate = (name, newValue) => {
+
+        const formattedDate = dayjs(newValue).format('MM/DD/YYYY')
+
+        setMenuFilter((menuFilter) => ({
+            ...menuFilter,
+            [name]: formattedDate,
+        }));
+    }
+
+    const removeDateFilter = () => {
+        setMenuFilter((menuFilter) => ({
+            ...menuFilter,
+            startDate: null,
+            finishDate: null,
+        }));
+    }
+
+    const filterModalContent = () => {
+
+        return (
+            <Box sx={createEditModalStyle}>
+                <Typography sx={{ mb: '30px' }} variant="h6">
+                    Route Filter
+                </Typography>
+                {/* Start Date and Finish Date Session */}
+                <Stack
+                    direction={'row'}
+                    spacing={2}
+                    justifyContent="flex-start"
+                >
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                            label="Start Date"
+                            value={menuFilter.startDate ? dayjs(menuFilter.startDate, "MM/DD/YYYY") : null}
+                            onChange={(newValue) => getFilterDate('startDate', newValue)}
+                        />
+                    </LocalizationProvider>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                            label="End Date"
+                            value={menuFilter.finishDate ? dayjs(menuFilter.finishDate, "MM/DD/YYYY") : null}
+                            onChange={(newValue) => getFilterDate('finishDate', newValue)}
+                        />
+                    </LocalizationProvider>
+                    <Tooltip title="Remove Date Filter">
+                        <IconButton onClick={removeDateFilter}>
+                            <IconClockCancel />
+                        </IconButton>
+                    </Tooltip>
+                </Stack>
+                {/* PackageTotal and RouteRemainQty Session */}
+                <Stack
+                    direction={'row'}
+                    spacing={2}
+                    justifyContent="space-between"
+                    sx={{ mb: '20px', mt: '20px' }}
+                >
+                    <FormControl fullWidth sx={{ mb: '20px' }}>
+                        <TextField
+                            select
+                            label="PackageTotal"
+                            name="packageTotal"
+                            value={menuFilter.packageTotal}
+                            onChange={getFilterValue}
+                            variant="outlined"
+                        >
+                            <MenuItem value={0} divider>None</MenuItem>
+                            {getSwitchData("packageTotal")}
+                        </TextField>
+                    </FormControl>
+                    <FormControl fullWidth sx={{ mb: '20px' }}>
+                        <TextField
+                            select
+                            label="RouteRemainQty"
+                            name="routeRemainQty"
+                            value={menuFilter.routeRemainQty}
+                            onChange={getFilterValue}
+                            variant="outlined"
+                        >
+                            <MenuItem value={0} divider>None</MenuItem>
+                            {getSwitchData("routeRemainQty")}
+                        </TextField>
+                    </FormControl>
+                </Stack>
+                {/* Package Wap Process session */}
+                <FormControl fullWidth sx={{ mb: '20px' }}>
+                    <TextField
+                        select
+                        label="Route Status"
+                        name="routeStatus"
+                        value={menuFilter.routeStatus}
+                        onChange={getFilterValue}
+                        variant="outlined"
+                    >
+                        <MenuItem value={0} divider>None</MenuItem>
+                        {getStatusSwitchData()}
+                    </TextField>
+                </FormControl>
+                {/* RouteTownShip session */}
+                <FormControl fullWidth sx={{ mb: '20px' }}>
+                    <TextField
+                        select
+                        label="RouteTownShip"
+                        name="routeTownship"
+                        value={menuFilter.routeTownship}
+                        onChange={getFilterValue}
+                        variant="outlined"
+                    >
+                        <MenuItem value={0} divider>None</MenuItem>
+                        {getSwitchData("routeTownship")}
+                    </TextField>
+                </FormControl>
+                {/* TotalPackagePrice & TotalDeliFee & TotalCollectMoney*/}
+                <Stack
+                    direction={'row'}
+                    spacing={2}
+                    justifyContent="space-between"
+                    sx={{ mb: '20px' }}
+                >
+                    <FormControl fullWidth sx={{ mb: '20px' }}>
+                        <TextField
+                            select
+                            label="PackagePrice"
+                            name="totalPackagePrice"
+                            value={menuFilter.totalPackagePrice}
+                            onChange={getFilterValue}
+                            variant="outlined"
+                        >
+                            <MenuItem value={0} divider>None</MenuItem>
+                            {getSwitchData("totalPackagePrice")}
+                        </TextField>
+                    </FormControl>
+                    <FormControl fullWidth sx={{ mb: '20px' }}>
+                        <TextField
+                            select
+                            label="DeliFee"
+                            name="totalDeliFee"
+                            value={menuFilter.deliFee}
+                            onChange={getFilterValue}
+                            variant="outlined"
+                        >
+                            <MenuItem value={0} divider>None</MenuItem>
+                            {getSwitchData("totalDeliFee")}
+                        </TextField>
+                    </FormControl>
+                    <FormControl fullWidth sx={{ mb: '20px' }}>
+                        <TextField
+                            select
+                            label="CollectMoney"
+                            name="totalCollectMoney"
+                            value={menuFilter.totalCollectMoney}
+                            onChange={getFilterValue}
+                            variant="outlined"
+                        >
+                            <MenuItem value={0} divider>None</MenuItem>
+                            {getSwitchData("totalCollectMoney")}
+                        </TextField>
+                    </FormControl>
+                </Stack>
+                <Stack
+                    direction={'row'}
+                    spacing={2}
+                    justifyContent="space-between"
+                >
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleFilterBtn}
+                        fullWidth
+                    >
+                        Filter
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        onClick={handleRemoveFilterBtn}
+                        fullWidth
+                    >
+                        Remove Filter
+                    </Button>
+                </Stack>
+            </Box >
+        );
+    }
 
     //Get clicked row of id
     const getClickedRowId = (rowIndex) => {
@@ -712,8 +1035,8 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                     </Typography>
                     <form onSubmit={handleSubmit}>
                         {tableTitle.slice(1).map((key) => {
-                            const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);                            
-                            if (key.toLowerCase().includes('vehiclelicenseplate')) {                                
+                            const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
+                            if (key.toLowerCase().includes('vehiclelicenseplate')) {
                                 return (
                                     <TextField
                                         label="VehicleLicensePlate"
@@ -1247,6 +1570,14 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
     return (
         <>
             <Modal
+                open={filtermodalState.open}
+                onClose={closeModal}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                {filterModalContent()}
+            </Modal>
+            <Modal
                 open={modalState.open}
                 onClose={closeModal}
                 aria-labelledby="modal-modal-title"
@@ -1291,18 +1622,71 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
             </Snackbar>
             {title && (
                 <CardContent sx={{ p: "3px" }}>
+                    <Typography
+                        variant='h5'
+                        sx={{
+                            whiteSpace: 'nowrap',
+                            pt: { xs: 0, sm: 1 },
+                            mb: 5
+                        }}
+                    >
+                        {title.value}
+                    </Typography>
                     <Stack
-                        direction="row"
+                        direction={{ xs: 'column', sm: 'row' }}
                         spacing={2}
-                        justifyContent="space-between"
-                        alignItems="center"
+                        justifyContent="flex-end"
+                        alignItems="flex-end"
                         mb={3}
                     >
-                        <Box>
-                            <Typography variant="h5">{title.value}</Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-                            <Button onClick={() => openModal('create')} variant="contained">{titleButton}</Button>
+                        <Box
+                            display="flex"
+                            alignItems="start"
+                            justifyContent={{ xs: 'flex-start', sm: "flex-end" }}
+                            width='100%'
+                            flexDirection={'row'}
+                        >
+                            <TextField
+                                name="search"
+                                value={searchRef.current}
+                                onChange={handleSearch}
+                                fullWidth
+                                variant='outlined'
+                                sx={{
+                                    width: 200,
+                                    mr: { xs: 0, sm: 2 },
+                                    mb: 1,
+                                }}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <IconSearch />
+                                        </InputAdornment>
+                                    ),
+                                    sx: { height: '45px' },
+                                }}>
+                            </TextField>
+                            <Box width={{ xs: '10px', sm: 0 }}></Box>
+                            <Tooltip title="Filter" sx={{ mr: { xs: 0, sm: 2 }, }}>
+                                <Fab
+                                    size="small"
+                                    color="primary"
+                                    onClick={openFilterModal}
+                                >
+                                    <IconFilter size="16" />
+                                </Fab>
+                            </Tooltip>
+                            <Box width={{ xs: '10px', sm: 0 }}></Box>
+                            <Button
+                                sx={{
+                                    width: 150,
+                                    padding: { xs: '10px 12px', sm: '8px 16px' },
+                                    fontSize: '14',
+                                }}
+                                onClick={() => openModal('create')}
+                                variant='contained'
+                            >{titleButton}
+                            </Button>
                         </Box>
                     </Stack>
                 </CardContent>
@@ -1341,7 +1725,7 @@ const RouteTable = ({ title, titleButton, tableTitle, tableData, deliverymanColu
                         </TableBody>
                         :
                         <TableBody>
-                            {tableData.map((row, rowIndex) => (
+                            {filteredData.map((row, rowIndex) => (
                                 <TableRow key={rowIndex}>
                                     {tableTitle.map((column, colIndex) => {
                                         if (column !== "DeliverymanId" && column !== "VehicleId" && column !== "PackageId") {

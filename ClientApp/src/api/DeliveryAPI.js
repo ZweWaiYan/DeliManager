@@ -35,7 +35,7 @@ export const CreateDeliveryman = async (deliverymanValues, companyId) => {
         RouteId : 0,
         DeliverymanAge: parseInt(deliverymanValues.deliverymanAge),
         CompanyId: companyId,
-    };         
+    };             
     try {
         const response = await axios.post(`/api/Deliveryman/CreateDeliveryman`, data);            
         if (response && response.status === 200) {
@@ -65,11 +65,11 @@ export const EditDeliveryman = async (id , deliverymanValues, companyId) => {
         DeliverymanAddress: deliverymanValues.deliverymanAddress,
         DeliverymanStatus : 1,
         DeliverymanNRC: deliverymanValues.deliverymanNRC,
-        DeliverymanLicenseNo: deliverymanValues.DeliverymanLicenseNo,
+        DeliverymanLicenseNo: deliverymanValues.deliverymanLicenseNo,
         // DeliverymanImage: deliverymanValues.DeliverymanImage.value,
         DeliverymanAge: parseInt(deliverymanValues.deliverymanAge),
         CompanyId: companyId,
-    };        
+    };            
     try {
         const response = await axios.post(`/api/Deliveryman/EditDeliveryman`, data);      
         if (response && response.status === 200) {

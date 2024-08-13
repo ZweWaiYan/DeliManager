@@ -6,19 +6,19 @@ import { Hidden, styled } from '@mui/material';
 import { Block } from '@mui/icons-material';
 
 const LinkStyled = styled(Link)(() => ({
-  height: '70px',
-  width: '200px',
+  // height: '70px',
+  // width: '70px',
   overflow: 'hidden',
   display: 'block',
 }));
 
-const Logo = () => {
+const LogoForMobile = () => {
   return (    
     <LinkStyled to="/">
-      <DeliManager height={70}/>      
+      <DeliManagerLogo height={70}/>      
     </LinkStyled>    
     
   )
 };
 
-export default Logo;
+export default LogoForMobile;

@@ -69,7 +69,7 @@ namespace DeliManager.Controllers
             else
             {
                 result.Status = false;
-                result.Message = "This Route is already existed";
+                result.Message = "Township already on route. Please choose another.";
             }
             return result;
         }

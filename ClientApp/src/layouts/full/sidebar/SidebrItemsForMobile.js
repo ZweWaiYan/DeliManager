@@ -4,8 +4,10 @@ import { useLocation } from 'react-router';
 import { Box, List } from '@mui/material';
 import NavItem from './NavItem';
 import NavGroup from './NavGroup/NavGroup';
+import NavItemForMobile from './NavItem/indexForMobile';
+import NavGroupForMobile from './NavGroup/NavGroupForMobile';
 
-const SidebarItems = () => {
+const SidebarItemsForMobile = () => {
   const { pathname } = useLocation();
   const pathDirect = pathname;
 
@@ -15,12 +17,12 @@ const SidebarItems = () => {
         {Menuitems.map((item) => {
           // {/********SubHeader**********/}
           if (item.subheader) {
-            return <NavGroup item={item} key={item.subheader} />;
+            return <NavGroupForMobile item={item} key={item.subheader} />;
             // {/********If Sub Menu**********/}
             /* eslint no-else-return: "off" */
           } else {
             return (
-              <NavItem item={item} key={item.id} pathDirect={pathDirect} />
+              <NavItemForMobile item={item} key={item.id} pathDirect={pathDirect} />
             );
           }
         })}
@@ -28,4 +30,4 @@ const SidebarItems = () => {
     </Box>
   );
 };
-export default SidebarItems;
+export default SidebarItemsForMobile;
